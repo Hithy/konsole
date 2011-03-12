@@ -29,6 +29,7 @@
 
 // Local
 #include "Profile.h"
+//#include "settings.h"
 
 class KAction;
 class KActionMenu;
@@ -157,6 +158,7 @@ class MainWindow : public KXmlGuiWindow
         void newTab();
         void newWindow();
         void showManageProfilesDialog();
+        void showSettingsDialog();
         void showRemoteConnectionDialog();
         void showShortcutsDialog();
         void newFromProfile(Profile::Ptr profile);
@@ -176,12 +178,15 @@ class MainWindow : public KXmlGuiWindow
 
         void openUrls(const QList<KUrl>& urls);
 
+        void applySettings();
+
     private:
         void correctShortcuts();
         void removeMenuAccelerators();
         void setupActions();
         void setupWidgets();
         QString activeSessionDir() const;
+
 
         // sets the active shortcuts of actions in 'dest' to the shortcuts of actions
         // with the same name in 'source' (see KAction::ActiveShortcut)

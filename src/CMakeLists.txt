@@ -22,7 +22,6 @@ configure_file (config-konsole.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-konsol
 configure_file(tests/CTestCustom.cmake
 ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
 
-
 ### Tests
     add_subdirectory(tests)
 
@@ -108,6 +107,8 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
         ${CMAKE_CURRENT_BINARY_DIR}/org.kde.konsole.Session.xml
     )
 
+    kde4_add_kcfg_files(konsoleprivate_SRCS settings/settings.kcfgc)
+
     set(konsole_LIBS
         ${KDE4_KPTY_LIBRARY}
         ${KDE4_KIO_LIBS}
@@ -136,6 +137,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
                   ManageProfilesDialog.ui
                   RemoteConnectionDialog.ui
                   RenameTabsDialog.ui
+                  settings/generalsettings.ui
                  )
 
     kde4_add_library(konsoleprivate SHARED ${konsoleprivate_SRCS})
@@ -146,6 +148,9 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
         Application.cpp
         MainWindow.cpp
         main.cpp
+        settings.cpp
+        settings/generalsettings.cpp
+        
     )
 
     kde4_add_app_icon(konsole_KDEINIT_SRCS "${KDE4_ICON_INSTALL_DIR}/oxygen/*/apps/utilities-terminal.png")
@@ -166,8 +171,6 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
     set_target_properties(konsolepart PROPERTIES DEFINE_SYMBOL KONSOLE_PART)
     target_link_libraries(konsolepart ${KDE4_KPARTS_LIBS} konsoleprivate)
     install(TARGETS konsolepart  DESTINATION ${PLUGIN_INSTALL_DIR} )
-
-### konsoleprofile command-line tool
 
     install(FILES konsoleprofile PERMISSIONS OWNER_READ
                                          OWNER_WRITE

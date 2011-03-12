@@ -1,0 +1,7 @@
+File=konsole.kcfg
+ClassName=Settings
+Singleton=true
+MemberVariables=private
+ItemAccessors=true
+Mutators=true
+GlobalEnums=true

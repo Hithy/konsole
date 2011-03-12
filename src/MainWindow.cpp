@@ -45,6 +45,7 @@
 #include <KWindowSystem>
 #include <KXMLGUIFactory>
 #include <KNotifyConfigWidget>
+#include <KConfigDialog>
 
 // Konsole
 #include "BookmarkHandler.h"
@@ -56,6 +57,8 @@
 #include "Session.h"
 #include "ViewManager.h"
 #include "ViewSplitter.h"
+#include "settings.h"
+#include "settings/generalsettings.h"
 
 using namespace Konsole;
 
@@ -93,8 +96,6 @@ MainWindow::MainWindow()
 
     connect( _viewManager , SIGNAL(setMenuBarVisibleRequest(bool)) , this ,
             SLOT(setMenuBarVisibleOnce(bool)) );
-    connect( _viewManager , SIGNAL(setSaveGeometryOnExitRequest(bool)) , this ,
-	    SLOT(setSaveGeometryOnExit(bool)) );
     connect( _viewManager , SIGNAL(newViewRequest(Profile::Ptr)) , 
         this , SLOT(newFromProfile(Profile::Ptr)) );
     connect( _viewManager , SIGNAL(newViewRequest()) , 
@@ -123,7 +124,8 @@ MainWindow::MainWindow()
     correctShortcuts();
 
     // enable save and restore of window size
-    setAutoSaveSettings("MainWindow",true);
+    setAutoSaveSettings("Window", Settings::saveGeometryOnExit());
+    kDebug()<< Settings::saveGeometryOnExit();
 }
 void MainWindow::removeMenuAccelerators()
 {
@@ -147,7 +149,7 @@ void MainWindow::setMenuBarVisibleOnce(bool visible)
 
 void MainWindow::setSaveGeometryOnExit(bool save)
 {
-    setAutoSaveSettings("MainWindow",save);
+    setAutoSaveSettings("Window",save);
 }
 
 void MainWindow::correctShortcuts()
@@ -290,6 +292,7 @@ void MainWindow::setupActions()
     // Settings Menu
     KStandardAction::configureNotifications( this , SLOT(configureNotifications()) , collection  );
     KStandardAction::keyBindings( this , SLOT(showShortcutsDialog()) , collection  );
+    KStandardAction::preferences(this, SLOT(showSettingsDialog()), collection);
 
     action = collection->addAction("configure-profiles");
     action->setText( i18n("Configure Profiles...") );
@@ -495,6 +498,26 @@ void MainWindow::showManageProfilesDialog()
     dialog->show();
 }
 
+void MainWindow::showSettingsDialog()
+{
+    if (KConfigDialog::showDialog("settings"))
+        return;
+
+    KConfigDialog* settingsDialog = new KConfigDialog(this, "settings",
+                                                      Settings::self());
+    settingsDialog->setFaceType(KPageDialog::List);
+
+    connect(settingsDialog, SIGNAL(settingsChanged(const QString&)),
+            this, SLOT(applySettings()));
+
+    GeneralSettings* generalSettings = new GeneralSettings(settingsDialog);
+    settingsDialog->addPage(generalSettings, 
+                            i18nc("@title Preferences page name", "General"),
+                            "system-run");
+
+    settingsDialog->show();
+}
+
 void MainWindow::showRemoteConnectionDialog()
 {
 //    RemoteConnectionDialog dialog(this);
@@ -531,6 +554,12 @@ void MainWindow::showEvent(QShowEvent *event)
     _toggleMenuBarAction->setChecked( !menuBar()->isHidden() );
     // Call parent method
     KXmlGuiWindow::showEvent(event);
+}
+
+void MainWindow::applySettings()
+{
+    setAutoSaveSettings("Window", Settings::saveGeometryOnExit());
+    kDebug()<< Settings::saveGeometryOnExit();
 }
 
 #include "MainWindow.moc"
