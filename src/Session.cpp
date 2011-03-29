@@ -1310,6 +1310,19 @@ void Session::restoreSession(KConfigGroup& group)
     if (!value.isEmpty()) setCodec(value.toUtf8());
 }
 
+void Session::sendCtrlC()
+{
+    // Some programs don't handle SIGINT
+    if (_program == "/bin/dash")
+    {
+        // Send ^C to clear the input line, then send a new line
+        _shellProcess->sendData("\003", 1);
+        _shellProcess->sendData("\n", 1);
+    } else {
+        ::kill(_shellProcess->pid(), SIGINT);
+    }
+}
+
 SessionGroup::SessionGroup(QObject* parent)
     : QObject(parent), _masterMode(0)
 {

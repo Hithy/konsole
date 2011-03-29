@@ -4,9 +4,16 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
   <kcfgfile name="konsolerc" />
-  <group name="Window">
-    <entry name="SaveGeometryOnExit" type="Bool">
-      <default>true</default>
+  <group name="Options">
+    <entry key="PreBookmarkCommand" type="Enum">
+       <label></label>
+       <whatsthis></whatsthis>
+       <choices>
+          <choice name="Nothing" />
+          <choice name="CtrlC" />
+          <choice name="CtrlCClear" />
+       </choices>
+       <default>Nothing</default>
     </entry>
   </group>
 </kcfg>

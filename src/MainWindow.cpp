@@ -96,6 +96,8 @@ MainWindow::MainWindow()
 
     connect( _viewManager , SIGNAL(setMenuBarVisibleRequest(bool)) , this ,
             SLOT(setMenuBarVisibleOnce(bool)) );
+    connect( _viewManager , SIGNAL(setSaveGeometryOnExitRequest(bool)) , this ,
+	    SLOT(setSaveGeometryOnExit(bool)) );
     connect( _viewManager , SIGNAL(newViewRequest(Profile::Ptr)) , 
         this , SLOT(newFromProfile(Profile::Ptr)) );
     connect( _viewManager , SIGNAL(newViewRequest()) , 
@@ -124,8 +126,9 @@ MainWindow::MainWindow()
     correctShortcuts();
 
     // enable save and restore of window size
-    setAutoSaveSettings("Window", Settings::saveGeometryOnExit());
-    kDebug()<< Settings::saveGeometryOnExit();
+    setAutoSaveSettings("MainWindow",true);
+
+    applySettings();
 }
 void MainWindow::removeMenuAccelerators()
 {
@@ -149,7 +152,7 @@ void MainWindow::setMenuBarVisibleOnce(bool visible)
 
 void MainWindow::setSaveGeometryOnExit(bool save)
 {
-    setAutoSaveSettings("Window",save);
+    setAutoSaveSettings("MainWindow",save);
 }
 
 void MainWindow::correctShortcuts()
@@ -583,8 +586,11 @@ void MainWindow::showEvent(QShowEvent *event)
 
 void MainWindow::applySettings()
 {
-    setAutoSaveSettings("Window", Settings::saveGeometryOnExit());
-    kDebug()<< Settings::saveGeometryOnExit();
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    _pluggedController->setPreBookmarkCommand(Settings::preBookmarkCommand());
+
+    QApplication::restoreOverrideCursor();
 }
 
 #include "MainWindow.moc"

@@ -321,6 +321,9 @@ public:
    */
   void refresh();
 
+  /** Send a Ctrl+C to the program running */
+  void sendCtrlC(void);
+
   void startZModem(const QString &rz, const QString &dir, const QStringList &list);
   void cancelZModem();
   bool isZModemBusy() { return _zmodemBusy; }

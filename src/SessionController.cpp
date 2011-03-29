@@ -58,6 +58,7 @@
 #include "ProfileList.h"
 #include "TerminalDisplay.h"
 #include "SessionManager.h"
+#include "settings.h"
 
 // for SaveHistoryTask
 #include <KFileDialog>
@@ -73,6 +74,7 @@ KIcon SessionController::_silenceIcon;
 QSet<SessionController*> SessionController::_allControllers;
 QPointer<SearchHistoryThread> SearchHistoryTask::_thread;
 int SessionController::_lastControllerId;
+Settings::EnumPreBookmarkCommand SessionController::_preBookmarkCommand;
 
 SessionController::SessionController(Session* session , TerminalDisplay* view, QObject* parent)
     : ViewProperties(parent)
@@ -239,8 +241,26 @@ void SessionController::rename()
     renameSession();
 }
 
+void SessionController::setPreBookmarkCommand(const Settings::EnumPreBookmarkCommand& cmd)
+{
+    _preBookmarkCommand = cmd;
+}
+
 void SessionController::openUrl( const KUrl& url )
 {
+    // Check if user wants to run a command first
+    switch (_preBookmarkCommand)
+    {
+        case Settings::Nothing: break;
+        case Settings::CtrlC: 
+            _session->sendCtrlC(); break;
+        case Settings::CtrlCClear: 
+            _session->sendCtrlC();
+            _session->emulation()->sendText("clear\r");
+            break;
+        default: break;
+    }
+
     // handle local paths
     if ( url.isLocalFile() )
     {

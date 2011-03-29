@@ -39,6 +39,7 @@
 #include "HistorySizeDialog.h"
 #include "ViewProperties.h"
 #include "Profile.h"
+#include "settings.h"
 
 namespace KIO
 {
@@ -137,6 +138,9 @@ public:
     /** Returns the set of all controllers that exist. */
     static QSet<SessionController*> allControllers()
     { return _allControllers; }
+
+    // Set the bookmark command to run before each bookmark
+    void setPreBookmarkCommand(const Settings::EnumPreBookmarkCommand& cmd);
 
 signals:
     /**
@@ -267,6 +271,7 @@ private:
     static int _lastControllerId;
     static KIcon _activityIcon;
     static KIcon _silenceIcon;
+    static Settings::EnumPreBookmarkCommand _preBookmarkCommand;
 };
 inline bool SessionController::isValid() const
 {

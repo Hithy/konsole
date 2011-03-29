@@ -5,3 +5,4 @@ MemberVariables=private
 ItemAccessors=true
 Mutators=true
 GlobalEnums=true
+UseEnumTypes=true

@@ -22,6 +22,7 @@ configure_file (config-konsole.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-konsol
 configure_file(tests/CTestCustom.cmake
 ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
 
+
 ### Tests
     add_subdirectory(tests)
 
