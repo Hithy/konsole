@@ -55,6 +55,7 @@
 #include <konq_operations.h>
 #include <KFileItem>
 #include <KLocalizedString>
+#include <KDebug>
 
 // Konsole
 #include "Filter.h"
@@ -64,6 +65,7 @@
 #include "ScreenWindow.h"
 #include "LineFont.h"
 #include "SessionController.h"
+#include "AppSettings.h"
 
 using namespace Konsole;
 
@@ -280,7 +282,6 @@ TerminalDisplay::TerminalDisplay(QWidget* parent)
     , _image(0)
     , _randomSeed(0)
     , _resizing(false)
-    , _showTerminalSizeHint(true)
     , _bidiEnabled(false)
     , _actSel(0)
     , _wordSelectionMode(false)
@@ -1078,7 +1079,10 @@ void TerminalDisplay::showResizeNotification()
         return;
     }
 
-    if (_showTerminalSizeHint && isVisible()) {
+    kDebug() << "object:" << AppSettings::self();
+    //kDebug() << "showTerminalSizeHint:" << AppSettings::showTerminalSizeHint();
+
+    if (AppSettings::showTerminalSizeHint() && isVisible()) {
         if (!_resizeWidget) {
             _resizeWidget = new QLabel(i18n("Size: XXX x XXX"), this);
             _resizeWidget->setMinimumWidth(_resizeWidget->fontMetrics().width(i18n("Size: XXX x XXX")));

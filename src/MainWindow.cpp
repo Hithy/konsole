@@ -516,6 +516,8 @@ void MainWindow::showSettingsDialog()
 
 void MainWindow::applyAppSettings()
 {
+    kDebug() << "object:" << AppSettings::self();
+    //kDebug() << "showTerminalSizeHint:" << AppSettings::showTerminalSizeHint();
     // setAutoSaveSettings("MainWindow", AppSettings::saveGeometryOnExit());
 }
 

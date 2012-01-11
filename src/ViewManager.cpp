@@ -822,9 +822,6 @@ void ViewManager::applyProfileToView(TerminalDisplay* view , const Profile::Ptr 
     else if (scrollBarPosition == Profile::ScrollBarHidden)
         view->setScrollBarPosition(TerminalDisplay::ScrollBarHidden);
 
-    // show hint about termianl size after resizing
-    view->setShowTerminalSizeHint(profile->property<bool>(Profile::ShowTerminalSizeHint));
-
     // terminal features
     bool blinkingCursor = profile->property<bool>(Profile::BlinkingCursorEnabled);
     view->setBlinkingCursorEnabled(blinkingCursor);

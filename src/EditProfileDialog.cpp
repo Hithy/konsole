@@ -274,7 +274,6 @@ void EditProfileDialog::setupGeneralPage(const Profile::Ptr info)
     _ui->startInSameDirButton->setChecked(info->property<bool>(Profile::StartInCurrentSessionDir));
 
     // window options
-    _ui->showTerminalSizeHintButton->setChecked(info->property<bool>(Profile::ShowTerminalSizeHint));
     _ui->saveGeometryOnExitButton->setChecked(info->property<bool>(Profile::SaveGeometryOnExit));
 
     // signals and slots
@@ -293,8 +292,6 @@ void EditProfileDialog::setupGeneralPage(const Profile::Ptr info)
 
     connect(_ui->saveGeometryOnExitButton, SIGNAL(toggled(bool)), this,
             SLOT(saveGeometryOnExit(bool)));
-    connect(_ui->showTerminalSizeHintButton, SIGNAL(toggled(bool)), this,
-            SLOT(showTerminalSizeHint(bool)));
 }
 void EditProfileDialog::showEnvironmentEditor()
 {
@@ -415,10 +412,6 @@ void EditProfileDialog::insertRemoteTabTitleText(const QString& text)
 void EditProfileDialog::saveGeometryOnExit(bool save)
 {
     updateTempProfileProperty(Profile::SaveGeometryOnExit, save);
-}
-void EditProfileDialog::showTerminalSizeHint(bool show)
-{
-    updateTempProfileProperty(Profile::ShowTerminalSizeHint, show);
 }
 void EditProfileDialog::tabTitleFormatChanged(const QString& format)
 {

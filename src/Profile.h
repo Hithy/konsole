@@ -107,8 +107,6 @@ public:
         /** (QString) The format used for tab titles when the session is running
          * a remote command (eg. SSH) */
         RemoteTabTitleFormat,
-        /** (bool) Specifies whether show hint for terminal size after resizing the application window. */
-        ShowTerminalSizeHint,
         /** (bool) Specifies whether the geometry information is saved when window is closed. */
         SaveGeometryOnExit,
         /** (TabBarModeEnum) Specifies when the tab bar should be shown in

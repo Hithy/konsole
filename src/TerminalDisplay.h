@@ -414,23 +414,6 @@ public:
     }
 
     /**
-     * Sets whether or not the current height and width of the
-     * terminal in lines and columns is displayed whilst the widget
-     * is being resized.
-     */
-    void setShowTerminalSizeHint(bool on) {
-        _showTerminalSizeHint = on;
-    }
-    /**
-     * Returns whether or not the current height and width of
-     * the terminal in lines and columns is displayed whilst the widget
-     * is being resized.
-     */
-    bool showTerminalSizeHint() const {
-        return _showTerminalSizeHint;
-    }
-
-    /**
      * Sets the status of the BiDi rendering inside the terminal display.
      * Defaults to disabled.
      */
@@ -777,7 +760,6 @@ private:
     uint _randomSeed;
 
     bool _resizing;
-    bool _showTerminalSizeHint;
     bool _bidiEnabled;
     bool _mouseMarks;
 
