@@ -145,9 +145,16 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
                   settings/TabBarSettings.ui
                  )
 
+    set( konsolesettings_SRCS 
+        AppSettings.cpp
+    )
+    kde4_add_library(konsolesettings SHARED ${konsolesettings_SRCS})
+    target_link_libraries(konsolesettings ${konsole_LIBS})
+
     kde4_add_library(konsoleprivate SHARED ${konsoleprivate_SRCS})
     target_link_libraries(konsoleprivate ${konsole_LIBS})
     target_link_libraries(konsoleprivate LINK_INTERFACE_LIBRARIES ${konsole_LIBS})
+    target_link_libraries(konsoleprivate konsolesettings)
 
     set(konsole_KDEINIT_SRCS
         Application.cpp
@@ -160,10 +167,12 @@ ${CMAKE_CURRENT_BINARY_DIR}/tests/CTestCustom.cmake)
 
     kde4_add_app_icon(konsole_KDEINIT_SRCS "${KDE4_ICON_INSTALL_DIR}/oxygen/*/apps/utilities-terminal.png")
 
-    kde4_add_kdeinit_executable( konsole ${konsole_KDEINIT_SRCS})
-    target_link_libraries(kdeinit_konsole konsoleprivate)
+    kde4_add_kdeinit_executable( konsole ${konsole_KDEINIT_SRCS} )
+    target_link_libraries(konsole konsolesettings )
+    target_link_libraries(kdeinit_konsole konsoleprivate )
+    #target_link_libraries(kdeinit_konsole konsolesettings)
 
-    install(TARGETS kdeinit_konsole konsole konsoleprivate ${INSTALL_TARGETS_DEFAULT_ARGS})
+    install(TARGETS kdeinit_konsole konsole konsoleprivate konsolesettings ${INSTALL_TARGETS_DEFAULT_ARGS})
 
 ### Embedded Konsole KPart
 
