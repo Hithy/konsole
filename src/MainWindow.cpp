@@ -86,6 +86,7 @@ MainWindow::MainWindow()
     // create actions for menus
     setupActions();
 
+
     // create view manager
     _viewManager = new ViewManager(this, actionCollection());
     connect(_viewManager , SIGNAL(empty()) , this , SLOT(close()));
@@ -132,6 +133,10 @@ MainWindow::MainWindow()
 
     // enable save and restore of window size
     setAutoSaveSettings("MainWindow", true);
+
+    // this must come at the end
+    applyAppSettings();
+    connect(AppSettings::self(), SIGNAL(configChanged()), this, SLOT(applyAppSettings()));
 }
 void MainWindow::removeMenuAccelerators()
 {
@@ -521,6 +526,11 @@ void MainWindow::showSettingsDialog()
                             "system-run");
 
     settingsDialog->show();
+}
+
+void MainWindow::applyAppSettings()
+{
+    // setAutoSaveSettings("MainWindow", AppSettings::saveGeometryOnExit());
 }
 
 void MainWindow::activateMenuBar()
