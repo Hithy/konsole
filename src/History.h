@@ -28,6 +28,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVector>
 #include <QtCore/QTemporaryFile>
+#include <QBitArray>
 
 // Konsole
 #include "Character.h"
@@ -143,8 +144,8 @@ private:
     int startOfLine(int lineno);
 
     QList<quint32> lineIndices; // Index of each line
+    QBitArray lineWrapped; // is line wrapped?
     HistoryFile cells; // text  Row(Character)
-    HistoryFile lineflags; // flags Row(unsigned char)
 };
 
 //////////////////////////////////////////////////////////////////////

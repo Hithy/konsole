@@ -200,6 +200,7 @@ bool HistoryScroll::hasScroll()
 HistoryScrollFile::HistoryScrollFile(const QString& logFileName)
     : HistoryScroll(new HistoryTypeFile(logFileName))
 {
+    lineWrapped.resize(200);
 }
 
 HistoryScrollFile::~HistoryScrollFile()
@@ -219,9 +220,7 @@ int HistoryScrollFile::getLineLen(int lineno)
 bool HistoryScrollFile::isWrappedLine(int lineno)
 {
     if (lineno >= 0 && lineno <= getLines()) {
-        unsigned char flag;
-        lineflags.get((unsigned char*)&flag, sizeof(unsigned char), (lineno)*sizeof(unsigned char));
-        return flag;
+        return lineWrapped.testBit(lineno);
     }
     return false;
 }
@@ -246,9 +245,13 @@ void HistoryScrollFile::addCells(const Character text[], int count)
 
 void HistoryScrollFile::addLine(bool previousWrapped)
 {
-    lineIndices<<(quint32)cells.len();
-    unsigned char flags = previousWrapped ? 0x01 : 0x00;
-    lineflags.add((unsigned char*)&flags, sizeof(unsigned char));
+    const quint32 row = lineIndices.size();
+    const quint32 index = (quint32)cells.len();
+    lineIndices<<index;
+    if (row >= lineWrapped.size()) {
+        lineWrapped.resize(lineWrapped.size() + 200);
+    }
+    lineWrapped.setBit(row, previousWrapped);
 }
 
 // History Scroll None //////////////////////////////////////
