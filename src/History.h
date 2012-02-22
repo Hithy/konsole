@@ -142,7 +142,7 @@ public:
 private:
     int startOfLine(int lineno);
 
-    HistoryFile index; // lines Row(int)
+    QList<quint32> lineIndices; // Index of each line
     HistoryFile cells; // text  Row(Character)
     HistoryFile lineflags; // flags Row(unsigned char)
 };

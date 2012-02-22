@@ -208,7 +208,7 @@ HistoryScrollFile::~HistoryScrollFile()
 
 int HistoryScrollFile::getLines()
 {
-    return index.len() / sizeof(int);
+    return lineIndices.size();
 }
 
 int HistoryScrollFile::getLineLen(int lineno)
@@ -229,16 +229,9 @@ bool HistoryScrollFile::isWrappedLine(int lineno)
 int HistoryScrollFile::startOfLine(int lineno)
 {
     if (lineno <= 0) return 0;
-    if (lineno <= getLines()) {
+    Q_ASSERT(lineno <= getLines());
 
-        if (!index.isMapped())
-            index.map();
-
-        int res;
-        index.get((unsigned char*)&res, sizeof(int), (lineno - 1)*sizeof(int));
-        return res;
-    }
-    return cells.len();
+    return lineIndices.at(lineno - 1);
 }
 
 void HistoryScrollFile::getCells(int lineno, int colno, int count, Character res[])
@@ -253,11 +246,7 @@ void HistoryScrollFile::addCells(const Character text[], int count)
 
 void HistoryScrollFile::addLine(bool previousWrapped)
 {
-    if (index.isMapped())
-        index.unmap();
-
-    int locn = cells.len();
-    index.add((unsigned char*)&locn, sizeof(int));
+    lineIndices<<(quint32)cells.len();
     unsigned char flags = previousWrapped ? 0x01 : 0x00;
     lineflags.add((unsigned char*)&flags, sizeof(unsigned char));
 }
