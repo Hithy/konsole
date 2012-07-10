@@ -120,10 +120,11 @@ QString TerminalDisplayAccessible::attributes(int offset, int* startOffset, int*
 
 QRect TerminalDisplayAccessible::characterRect(int offset, QAccessible2::CoordinateType coordType)
 {
-    // FIXME return the rect of a letter inside the display
     Q_UNUSED(offset)
-    Q_UNUSED(coordType)
-    return QRect();
+    QPoint position = display()->screenWindow()->cursorPosition();
+    if(coordType == QAccessible2::RelativeToScreen)
+        position = display()->mapToGlobal(QPoint(position.rx()*display()->fontWidth(),position.y()*display()->fontHeight()));
+    return QRect(position,QSize(display()->fontWidth(),display()->fontHeight()));
 }
 
 int TerminalDisplayAccessible::offsetAtPoint(const QPoint& point, QAccessible2::CoordinateType coordType)
@@ -154,6 +155,16 @@ void TerminalDisplayAccessible::setCursorPosition(int position)
         return;
 
     display()->screenWindow()->screen()->setCursorYX(lineForOffset(position), columnForOffset(position));
+}
+
+QAccessible::State TerminalDisplayAccessible::state(int child)
+{
+    Q_UNUSED(child)
+    QAccessible::State state = QAccessibleWidgetEx::state(0);
+    state |= QAccessible::Focusable;
+    if(display()->hasFocus())
+        state |= QAccessible::Focused;
+    return state;
 }
 
 void TerminalDisplayAccessible::setSelection(int selectionIndex, int startOffset, int endOffset)
