@@ -68,7 +68,6 @@ public:
 
     int cursorPosition();
     void setCursorPosition(int position);
-    QAccessible::State state(int child);
 
 private:
     Konsole::TerminalDisplay *display();

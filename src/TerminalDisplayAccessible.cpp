@@ -157,16 +157,6 @@ void TerminalDisplayAccessible::setCursorPosition(int position)
     display()->screenWindow()->screen()->setCursorYX(lineForOffset(position), columnForOffset(position));
 }
 
-QAccessible::State TerminalDisplayAccessible::state(int child)
-{
-    Q_UNUSED(child)
-    QAccessible::State state = QAccessibleWidgetEx::state(0);
-    state |= QAccessible::Focusable;
-    if(display()->hasFocus())
-        state |= QAccessible::Focused;
-    return state;
-}
-
 void TerminalDisplayAccessible::setSelection(int selectionIndex, int startOffset, int endOffset)
 {
     if (selectionIndex)
