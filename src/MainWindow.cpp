@@ -27,7 +27,6 @@
 #include <KAcceleratorManager>
 #include <KActionCollection>
 #include <KActionMenu>
-#include <KCmdLineArgs>
 #include <KShortcutsDialog>
 #include <KLocalizedString>
 
@@ -41,8 +40,6 @@
 #include <KXMLGUIFactory>
 #include <KNotifyConfigWidget>
 #include <KConfigDialog>
-#include <KApplication>
-#include <KShortcut>
 #include <KIconLoader>
 
 // Konsole
@@ -61,12 +58,13 @@
 
 using namespace Konsole;
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(const QCommandLineParser &parser)
     : KXmlGuiWindow()
     , _bookmarkHandler(0)
     , _pluggedController(0)
     , _menuBarInitialVisibility(true)
     , _menuBarInitialVisibilityApplied(false)
+    , m_parser(parser)
 {
     if (!KonsoleSettings::saveGeometryOnExit()) {
         // If we are not using the global Konsole save geometry on exit,
@@ -131,9 +129,7 @@ MainWindow::MainWindow()
 
 void MainWindow::updateUseTransparency()
 {
-    const KCmdLineArgs* args = KCmdLineArgs::parsedArgs();
-
-    bool useTranslucency = KWindowSystem::compositingActive() && args->isSet("transparency");
+    bool useTranslucency = KWindowSystem::compositingActive() && m_parser.isSet("transparency");
 
     setAttribute(Qt::WA_TranslucentBackground, useTranslucency);
     setAttribute(Qt::WA_NoSystemBackground, false);
@@ -531,9 +527,13 @@ bool MainWindow::queryClose()
     // Do not ask for confirmation during log out and power off
     // TODO: rework the dealing of this case to make it has its own confirmation
     // dialog.
+
+    // FIXME: Porting to QApplication.
+    /*
     if (kapp->sessionSaving()) {
         return true;
     }
+    */
 
     // Check what processes are running,
     // if just the default shell is running don't ask for confirmation

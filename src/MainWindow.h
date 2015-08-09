@@ -23,6 +23,7 @@
 // Qt
 #include <QtCore/QPointer>
 #include <QtCore/QUrl>
+#include <QCommandLineParser>
 
 // KDE
 #include <KXmlGuiWindow>
@@ -63,7 +64,7 @@ public:
      * Constructs a new main window.  Do not create new main windows directly, use Application's
      * newMainWindow() method instead.
      */
-    MainWindow();
+    MainWindow(const QCommandLineParser &parser);
 
     /**
      * Returns the view manager associated with this window.  The view manager can be used to
@@ -210,6 +211,7 @@ private:
 
     bool _menuBarInitialVisibility;
     bool _menuBarInitialVisibilityApplied;
+    const QCommandLineParser &m_parser;
 };
 }
 

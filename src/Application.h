@@ -21,12 +21,11 @@
 #define APPLICATION_H
 
 // KDE
-#include <KUniqueApplication>
+#include <QApplication>
+#include <QCommandLineParser>
 
 // Konsole
 #include "Profile.h"
-
-class KCmdLineArgs;
 
 namespace Konsole
 {
@@ -45,13 +44,13 @@ class Session;
  * The factory used to create new terminal sessions can be retrieved using
  * the sessionManager() accessor.
  */
-class Application : public KUniqueApplication
+class Application : public QObject
 {
     Q_OBJECT
 
 public:
     /** Constructs a new Konsole application. */
-    Application();
+    Application(const QCommandLineParser &parser);
 
     virtual ~Application();
 
@@ -65,6 +64,8 @@ public:
      */
     MainWindow* newMainWindow();
 
+    bool init();
+
 private slots:
     void createWindow(Profile::Ptr profile , const QString& directory);
     void detachView(Session* session);
@@ -72,19 +73,18 @@ private slots:
     void toggleBackgroundInstance();
 
 private:
-    void init();
     void listAvailableProfiles();
     void listProfilePropertyInfo();
     void startBackgroundMode(MainWindow* window);
-    bool processHelpArgs(KCmdLineArgs* args);
-    MainWindow* processWindowArgs(KCmdLineArgs* args);
-    Profile::Ptr processProfileSelectArgs(KCmdLineArgs* args);
-    Profile::Ptr processProfileChangeArgs(KCmdLineArgs* args, Profile::Ptr baseProfile);
-    void processTabsFromFileArgs(KCmdLineArgs* args, MainWindow* window);
-    void createTabFromArgs(KCmdLineArgs* args, MainWindow* window,
-                           const QHash<QString, QString>&);
+    bool processHelpArgs();
+    MainWindow* processWindowArgs();
+    Profile::Ptr processProfileSelectArgs();
+    Profile::Ptr processProfileChangeArgs(Profile::Ptr baseProfile);
+    void processTabsFromFileArgs(MainWindow* window);
+    void createTabFromArgs(MainWindow* window, const QHash<QString, QString>&);
 
     MainWindow* _backgroundInstance;
+    const QCommandLineParser &m_parser;
 };
 }
 #endif  // APPLICATION_H

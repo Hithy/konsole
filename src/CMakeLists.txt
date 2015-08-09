@@ -132,6 +132,7 @@ set(konsole_LIBS
                  KF5::I18n
                  KF5::Pty
                  KF5::KIOWidgets
+                 KF5::DBusAddons
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
@@ -169,6 +170,7 @@ set(konsole_KDEINIT_SRCS
    Application.cpp
    MainWindow.cpp
    main.cpp
+   KonsoleRunningInstanceInfo.cpp
    settings/GeneralSettings.cpp
    settings/TabBarSettings.cpp)
 
@@ -181,7 +183,6 @@ target_link_libraries(kdeinit_konsole konsoleprivate KF5::XmlGui KF5::WindowSyst
   KF5::I18n
   KF5::KIOWidgets
   KF5::NotifyConfig
-  KF5::KDELibs4Support
 )
 
 install(TARGETS kdeinit_konsole konsole

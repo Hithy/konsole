@@ -36,7 +36,7 @@ find_package(KF5 ${KF5_MIN_VERSION} REQUIRED
     CoreAddons DocTools GuiAddons I18n IconThemes
     Init KDELibs4Support KIO Notifications NotifyConfig
     Parts Pty Service TextWidgets WidgetsAddons
-    WindowSystem XmlGui
+    WindowSystem XmlGui DBusAddons
 )
 
 find_package(X11)
