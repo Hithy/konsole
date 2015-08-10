@@ -50,12 +50,12 @@ class Application : public QObject
 
 public:
     /** Constructs a new Konsole application. */
-    Application(const QCommandLineParser &parser);
+    Application(QCommandLineParser &parser);
 
-    virtual ~Application();
+    ~Application();
 
     /** Creates a new main window and opens a default terminal session */
-    virtual int newInstance();
+    int newInstance();
 
     /**
      * Creates a new, empty main window and connects to its newSessionRequest()
@@ -64,8 +64,6 @@ public:
      */
     MainWindow* newMainWindow();
 
-    bool init();
-
 private slots:
     void createWindow(Profile::Ptr profile , const QString& directory);
     void detachView(Session* session);
@@ -73,7 +71,7 @@ private slots:
     void toggleBackgroundInstance();
 
 public slots:
-    void slotActivateRequested (const QStringList &arguments, const QString &workingDirectory);
+    void slotActivateRequested (const QStringList &args, const QString &workingDir);
 
 private:
     void listAvailableProfiles();
@@ -87,7 +85,7 @@ private:
     void createTabFromArgs(MainWindow* window, const QHash<QString, QString>&);
 
     MainWindow* _backgroundInstance;
-    const QCommandLineParser &m_parser;
+    QCommandLineParser &m_parser;
 };
 }
 #endif  // APPLICATION_H

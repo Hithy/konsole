@@ -40,38 +40,10 @@
 
 using namespace Konsole;
 
-Application::Application(const QCommandLineParser &parser) : m_parser(parser)
+Application::Application(QCommandLineParser &parser) : m_parser(parser)
 {
     qDebug() << "In Application::Application()";
-    init();
-
-
-}
-
-bool Application::init()
-{
-    qDebug() << "In Application::init()";
     _backgroundInstance = 0;
-
-    // enable high dpi support
-    //setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-
-#if defined(Q_OS_MAC)
-    // this ensures that Ctrl and Meta are not swapped, so CTRL-C and friends
-    // will work correctly in the terminal
-    //setAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
-
-    // KDE's menuBar()->isTopLevel() hasn't worked in a while.
-    // For now, put menus inside Konsole window; this also make
-    // the keyboard shortcut to show menus look reasonable.
-    //setAttribute(Qt::AA_DontUseNativeMenuBar);
-#endif
-
-    //QDBusConnection::sessionBus().registerObject(QStringLiteral("/MainApplication"), this);
-    qDebug() << "Running newInstance()";
-    int ret = newInstance();
-    qDebug() << "newIntance returned" << ret;
-    return true;
 }
 
 Application::~Application()
@@ -109,65 +81,65 @@ void Application::detachView(Session* session)
 
 int Application::newInstance()
 {
-    static bool firstInstance = true;
+    qDebug() << "newInstance()";
+
+    qDebug() << "newInstance(), positionalArguments()" << m_parser.positionalArguments();
+    qDebug() << "newInstance(), optionNames()" << m_parser.optionNames();
+    qDebug() << "newInstance(), unknownOptionNames()" << m_parser.unknownOptionNames();
 
     // handle session management
 
-    //if ((m_parser.positionalArguments().count() != 0) || !firstInstance || !isSessionRestored()) {
-    if ((m_parser.positionalArguments().count() != 0) || !firstInstance) {
-        // check for arguments to print help or other information to the
-        // terminal, quit if such an argument was found
-        if (processHelpArgs())
-            return 0;
+    // check for arguments to print help or other information to the
+    // terminal, quit if such an argument was found
+    if (processHelpArgs())
+        return 0;
 
-        // create a new window or use an existing one
-        MainWindow* window = processWindowArgs();
+    // create a new window or use an existing one
+    MainWindow* window = processWindowArgs();
 
-        if (m_parser.isSet("tabs-from-file")) {
-            // create new session(s) as described in file
-            processTabsFromFileArgs(window);
-        } else {
-            // select profile to use
-            Profile::Ptr baseProfile = processProfileSelectArgs();
+    if (m_parser.isSet("tabs-from-file")) {
+        // create new session(s) as described in file
+        processTabsFromFileArgs(window);
+    } else {
+        // select profile to use
+        Profile::Ptr baseProfile = processProfileSelectArgs();
 
-            // process various command-line options which cause a property of the
-            // selected profile to be changed
-            Profile::Ptr newProfile = processProfileChangeArgs(baseProfile);
+        // process various command-line options which cause a property of the
+        // selected profile to be changed
+        Profile::Ptr newProfile = processProfileChangeArgs(baseProfile);
 
-            // create new session
-            Session* session = window->createSession(newProfile, QString());
+        // create new session
+        Session* session = window->createSession(newProfile, QString());
 
-            if (!m_parser.isSet("close")) {
-                session->setAutoClose(false);
-            }
-        }
-
-        // if the background-mode argument is supplied, start the background
-        // session ( or bring to the front if it already exists )
-        if (m_parser.isSet("background-mode")) {
-            startBackgroundMode(window);
-        } else {
-            // Qt constrains top-level windows which have not been manually
-            // resized (via QWidget::resize()) to a maximum of 2/3rds of the
-            //  screen size.
-            //
-            // This means that the terminal display might not get the width/
-            // height it asks for.  To work around this, the widget must be
-            // manually resized to its sizeHint().
-            //
-            // This problem only affects the first time the application is run.
-            // run. After that KMainWindow will have manually resized the
-            // window to its saved size at this point (so the Qt::WA_Resized
-            // attribute will be set)
-            if (!window->testAttribute(Qt::WA_Resized))
-                window->resize(window->sizeHint());
-
-            window->show();
+        if (!m_parser.isSet("close")) {
+            session->setAutoClose(false);
         }
     }
 
-    firstInstance = false;
-    return 0;
+    // if the background-mode argument is supplied, start the background
+    // session ( or bring to the front if it already exists )
+    if (m_parser.isSet("background-mode")) {
+        startBackgroundMode(window);
+    } else {
+        // Qt constrains top-level windows which have not been manually
+        // resized (via QWidget::resize()) to a maximum of 2/3rds of the
+        //  screen size.
+        //
+        // This means that the terminal display might not get the width/
+        // height it asks for.  To work around this, the widget must be
+        // manually resized to its sizeHint().
+        //
+        // This problem only affects the first time the application is run.
+        // run. After that KMainWindow will have manually resized the
+        // window to its saved size at this point (so the Qt::WA_Resized
+        // attribute will be set)
+        if (!window->testAttribute(Qt::WA_Resized))
+            window->resize(window->sizeHint());
+
+        window->show();
+    }
+
+    return 1;
 }
 
 /* Documentation for tab file:
@@ -296,8 +268,12 @@ void Application::createTabFromArgs(MainWindow* window,
     window->hide();
 }
 
+// Creates a new Konsole window.
+// If --new-tab is given, use existing window.
 MainWindow* Application::processWindowArgs()
 {
+    qDebug() << "processWindowArgs()";
+
     MainWindow* window = 0;
     if (m_parser.isSet("new-tab")) {
         QListIterator<QWidget*> iter(QApplication::topLevelWidgets());
@@ -338,6 +314,10 @@ MainWindow* Application::processWindowArgs()
     return window;
 }
 
+// Loads a profile.
+// If --profile <name> is given, loads profile <name>.
+// If --fallback-profile is given, loads profile FALLBACK/.
+// Else loads the default profile.
 Profile::Ptr Application::processProfileSelectArgs()
 {
     Profile::Ptr defaultProfile = ProfileManager::instance()->defaultProfile();
@@ -370,11 +350,14 @@ bool Application::processHelpArgs()
 
 void Application::listAvailableProfiles()
 {
+    qDebug() << "In listAvailableProfiles()";
+
     QStringList paths = ProfileManager::instance()->availableProfilePaths();
 
     foreach(const QString& path, paths) {
         QFileInfo info(path);
         printf("%s\n", info.completeBaseName().toLocal8Bit().constData());
+        //qDebug() << info.completeBaseName();
     }
 
     //quit();
@@ -383,11 +366,14 @@ void Application::listAvailableProfiles()
 
 void Application::listProfilePropertyInfo()
 {
+    qDebug() << "In listProfilePropertyInfo()";
+
     Profile::Ptr tempProfile = ProfileManager::instance()->defaultProfile();
     const QStringList names = tempProfile->propertiesInfoList();
 
     foreach(const QString& name, names) {
         printf("%s\n", name.toLocal8Bit().constData());
+        //qDebug() << name;
     }
 
     //quit();
@@ -487,9 +473,9 @@ void Application::toggleBackgroundInstance()
     }
 }
 
-void Application::slotActivateRequested (const QStringList &arguments, const QString &workingDirectory)
+void Application::slotActivateRequested (const QStringList &args, const QString &workingDir)
 {
-    qDebug() << "slotActivateRequested" << arguments << workingDirectory;
+    qDebug() << "slotActivateRequested" << args << workingDir;
+    m_parser.parse(args);
     newInstance();
 }
-

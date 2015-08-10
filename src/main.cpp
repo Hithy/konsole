@@ -58,6 +58,20 @@ extern "C" int Q_DECL_EXPORT kdemain(int argc, char** argv)
 {
     QApplication app(argc, argv);
 
+    // enable high dpi support
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
+#if defined(Q_OS_MAC)
+    // this ensures that Ctrl and Meta are not swapped, so CTRL-C and friends
+    // will work correctly in the terminal
+    app.setAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+
+    // KDE's menuBar()->isTopLevel() hasn't worked in a while.
+    // For now, put menus inside Konsole window; this also make
+    // the keyboard shortcut to show menus look reasonable.
+    app.setAttribute(Qt::AA_DontUseNativeMenuBar);
+#endif
+
     Kdelibs4ConfigMigrator migrate(QLatin1String("konsole"));
     migrate.setConfigFiles(QStringList() << QStringLiteral("konsolerc") << QLatin1String("konsole.notifyrc"));
     migrate.setUiFiles(QStringList() << QStringLiteral("sessionui.rc") << QLatin1String("partui.rc") << QLatin1String("konsoleui.rc"));
@@ -120,7 +134,7 @@ extern "C" int Q_DECL_EXPORT kdemain(int argc, char** argv)
     QObject::connect(&dbusService, SIGNAL(activateRequested(QStringList,QString)),
                      &konsoleApp, SLOT(slotActivateRequested(QStringList,QString)));
 
-    if (!konsoleApp.init()) {
+    if (!konsoleApp.newInstance()) {
         qDebug() << "konsoleApp::init failed";
         return 0;
     }
