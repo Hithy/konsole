@@ -20,7 +20,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-// KDE
+// Qt
 #include <QApplication>
 #include <QCommandLineParser>
 
@@ -71,6 +71,9 @@ private slots:
     void detachView(Session* session);
 
     void toggleBackgroundInstance();
+
+public slots:
+    void slotActivateRequested (const QStringList &arguments, const QString &workingDirectory);
 
 private:
     void listAvailableProfiles();

@@ -44,6 +44,8 @@ Application::Application(const QCommandLineParser &parser) : m_parser(parser)
 {
     qDebug() << "In Application::Application()";
     init();
+
+
 }
 
 bool Application::init()
@@ -483,5 +485,11 @@ void Application::toggleBackgroundInstance()
     } else {
         _backgroundInstance->hide();
     }
+}
+
+void Application::slotActivateRequested (const QStringList &arguments, const QString &workingDirectory)
+{
+    qDebug() << "slotActivateRequested" << arguments << workingDirectory;
+    newInstance();
 }
 

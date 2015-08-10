@@ -110,8 +110,15 @@ extern "C" int Q_DECL_EXPORT kdemain(int argc, char** argv)
     qDebug() << "Registering DBus service";
     KDBusService dbusService(KDBusService::Unique);
 
+    // If we reach this location, there was no existing copy of Konsole
+    // running, so create a new instance.
     qDebug() << "Creating new konsoleApp";
     Application konsoleApp(parser);
+
+    // The activateRequested() signal is emitted when a second instance
+    // of Konsole is started.
+    QObject::connect(&dbusService, SIGNAL(activateRequested(QStringList,QString)),
+                     &konsoleApp, SLOT(slotActivateRequested(QStringList,QString)));
 
     if (!konsoleApp.init()) {
         qDebug() << "konsoleApp::init failed";

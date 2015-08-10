@@ -170,7 +170,7 @@ set(konsole_KDEINIT_SRCS
    Application.cpp
    MainWindow.cpp
    main.cpp
-   KonsoleRunningInstanceInfo.cpp
+
    settings/GeneralSettings.cpp
    settings/TabBarSettings.cpp)
 
