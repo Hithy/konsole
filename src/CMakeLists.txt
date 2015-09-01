@@ -154,6 +154,7 @@ ki18n_wrap_ui(konsoleprivate_SRCS ColorSchemeEditor.ui
                                 PrintOptions.ui
                                 settings/FileLocationSettings.ui
                                 settings/GeneralSettings.ui
+                                settings/ProfileSettings.ui
                                 settings/TabBarSettings.ui)
 
 add_library(konsoleprivate ${konsoleprivate_SRCS})
@@ -173,6 +174,7 @@ set(konsole_KDEINIT_SRCS
    main.cpp
    settings/FileLocationSettings.cpp
    settings/GeneralSettings.cpp
+   settings/ProfileSettings.cpp
    settings/TabBarSettings.cpp)
 
 kconfig_add_kcfg_files(konsole_KDEINIT_SRCS settings/KonsoleSettings.kcfgc)
