@@ -669,7 +669,7 @@ void MainWindow::showSettingsDialog()
         return;
 
     KConfigDialog* settingsDialog = new KConfigDialog(this, "settings", KonsoleSettings::self());
-    settingsDialog->setFaceType(KPageDialog::List);
+    settingsDialog->setFaceType(KPageDialog::Tabbed);
 
     GeneralSettings* generalSettings = new GeneralSettings(settingsDialog);
     settingsDialog->addPage(generalSettings,
