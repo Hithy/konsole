@@ -660,11 +660,10 @@ void MainWindow::newFromProfile(Profile::Ptr profile)
 }
 void MainWindow::showManageProfilesDialog()
 {
-    ManageProfilesDialog* dialog = new ManageProfilesDialog(this);
-    dialog->show();
+    showSettingsDialog(true);
 }
 
-void MainWindow::showSettingsDialog()
+void MainWindow::showSettingsDialog(const bool showProfilePage)
 {
     if (KConfigDialog::showDialog("settings"))
         return;
@@ -679,7 +678,7 @@ void MainWindow::showSettingsDialog()
                             "utilities-terminal");
 
     ProfileSettings* profileSettings = new ProfileSettings(settingsDialog);
-    settingsDialog->addPage(profileSettings,
+    KPageWidgetItem* profilePage = settingsDialog->addPage(profileSettings,
                             i18nc("@title Preferences page name", "Profiles"),
                             "configure");
 
@@ -692,6 +691,9 @@ void MainWindow::showSettingsDialog()
     settingsDialog->addPage(fileLocationSettings,
                             i18nc("@title Preferences page name", "File Location"),
                             "configure");
+
+    if (showProfilePage)
+        settingsDialog->setCurrentPage(profilePage);
 
     settingsDialog->show();
 }
