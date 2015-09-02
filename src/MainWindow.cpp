@@ -672,10 +672,16 @@ void MainWindow::showSettingsDialog()
     KConfigDialog* settingsDialog = new KConfigDialog(this, "settings", KonsoleSettings::self());
     settingsDialog->setFaceType(KPageDialog::Tabbed);
 
+    // Should these be in order of use?
     GeneralSettings* generalSettings = new GeneralSettings(settingsDialog);
     settingsDialog->addPage(generalSettings,
                             i18nc("@title Preferences page name", "General"),
                             "utilities-terminal");
+
+    ProfileSettings* profileSettings = new ProfileSettings(settingsDialog);
+    settingsDialog->addPage(profileSettings,
+                            i18nc("@title Preferences page name", "Profiles"),
+                            "configure");
 
     TabBarSettings* tabBarSettings = new TabBarSettings(settingsDialog);
     settingsDialog->addPage(tabBarSettings,
@@ -685,11 +691,6 @@ void MainWindow::showSettingsDialog()
     FileLocationSettings* fileLocationSettings = new FileLocationSettings(settingsDialog);
     settingsDialog->addPage(fileLocationSettings,
                             i18nc("@title Preferences page name", "File Location"),
-                            "configure");
-
-    ProfileSettings* profileSettings = new ProfileSettings(settingsDialog);
-    settingsDialog->addPage(profileSettings,
-                            i18nc("@title Preferences page name", "Profiles"),
                             "configure");
 
     settingsDialog->show();
