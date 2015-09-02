@@ -85,7 +85,6 @@ set(konsoleprivate_SRCS ${sessionadaptors_SRCS}
                         KeyBindingEditor.cpp
                         KeyboardTranslator.cpp
                         KeyboardTranslatorManager.cpp
-                        ManageProfilesDialog.cpp
                         ProcessInfo.cpp
                         Profile.cpp
                         ProfileList.cpp
@@ -146,7 +145,6 @@ ki18n_wrap_ui(konsoleprivate_SRCS ColorSchemeEditor.ui
                                 CopyInputDialog.ui
                                 EditProfileDialog.ui
                                 KeyBindingEditor.ui
-                                ManageProfilesDialog.ui
                                 RenameTabDialog.ui
                                 RenameTabWidget.ui
                                 HistorySizeDialog.ui

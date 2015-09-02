@@ -49,7 +49,6 @@
 #include "BookmarkHandler.h"
 #include "SessionController.h"
 #include "ProfileList.h"
-#include "ManageProfilesDialog.h"
 #include "Session.h"
 #include "ViewManager.h"
 #include "SessionManager.h"

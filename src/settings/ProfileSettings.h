@@ -45,8 +45,8 @@ class ProfileSettings : public QWidget, private Ui::ProfileSettings
 {
     Q_OBJECT
 
-    friend class FavoriteItemDelegate2;
-    friend class ShortcutItemDelegate2;
+    friend class FavoriteItemDelegate;
+    friend class ShortcutItemDelegate;
 
 public:
     explicit ProfileSettings(QWidget* parent = 0);
@@ -110,17 +110,17 @@ private:
     static const int ShortcutRole = Qt::UserRole + 1;
 };
 
-class StyledBackgroundPainter2
+class StyledBackgroundPainter
 {
 public:
     static void drawBackground(QPainter* painter, const QStyleOptionViewItem& option,
                                const QModelIndex& index);
 };
 
-class FavoriteItemDelegate2 : public QStyledItemDelegate
+class FavoriteItemDelegate : public QStyledItemDelegate
 {
 public:
-    explicit FavoriteItemDelegate2(QObject* parent = 0);
+    explicit FavoriteItemDelegate(QObject* parent = 0);
 
     virtual bool editorEvent(QEvent* event, QAbstractItemModel* model,
                              const QStyleOptionViewItem& option, const QModelIndex& index);

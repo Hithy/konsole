@@ -57,7 +57,7 @@ ProfileSettings::ProfileSettings(QWidget* aParent)
     sessionTable->verticalHeader()->hide();
     sessionTable->setShowGrid(false);
 
-    sessionTable->setItemDelegateForColumn(FavoriteStatusColumn, new FavoriteItemDelegate2(this));
+    sessionTable->setItemDelegateForColumn(FavoriteStatusColumn, new FavoriteItemDelegate(this));
     sessionTable->setItemDelegateForColumn(ShortcutColumn, new ShortcutItemDelegate2(this));
     sessionTable->setEditTriggers(sessionTable->editTriggers() | QAbstractItemView::SelectedClicked);
 
@@ -440,7 +440,7 @@ void ProfileSettings::setShortcutEditorVisible(bool visible)
 {
     sessionTable->setColumnHidden(ShortcutColumn, !visible);
 }
-void StyledBackgroundPainter2::drawBackground(QPainter* painter, const QStyleOptionViewItem& option,
+void StyledBackgroundPainter::drawBackground(QPainter* painter, const QStyleOptionViewItem& option,
         const QModelIndex&)
 {
     const QStyleOptionViewItemV3* v3option = qstyleoption_cast<const QStyleOptionViewItemV3*>(&option);
@@ -451,17 +451,17 @@ void StyledBackgroundPainter2::drawBackground(QPainter* painter, const QStyleOpt
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, widget);
 }
 
-FavoriteItemDelegate2::FavoriteItemDelegate2(QObject* aParent)
+FavoriteItemDelegate::FavoriteItemDelegate(QObject* aParent)
     : QStyledItemDelegate(aParent)
 {
 }
-void FavoriteItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void FavoriteItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     // See implementation of QStyledItemDelegate::paint()
     QStyleOptionViewItemV4 opt = option;
     initStyleOption(&opt, index);
 
-    StyledBackgroundPainter2::drawBackground(painter, opt, index);
+    StyledBackgroundPainter::drawBackground(painter, opt, index);
 
     int margin = (opt.rect.height() - opt.decorationSize.height()) / 2;
     margin++;
@@ -473,7 +473,7 @@ void FavoriteItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem&
     icon.paint(painter, opt.rect, Qt::AlignCenter);
 }
 
-bool FavoriteItemDelegate2::editorEvent(QEvent* aEvent, QAbstractItemModel*,
+bool FavoriteItemDelegate::editorEvent(QEvent* aEvent, QAbstractItemModel*,
                                        const QStyleOptionViewItem&, const QModelIndex& index)
 {
     if (aEvent->type() == QEvent::MouseButtonPress ||
@@ -533,7 +533,7 @@ void ShortcutItemDelegate2::paint(QPainter* painter, const QStyleOptionViewItem&
                                  const QModelIndex& index) const
 {
     if (_itemsBeingEdited.contains(index))
-        StyledBackgroundPainter2::drawBackground(painter, option, index);
+        StyledBackgroundPainter::drawBackground(painter, option, index);
     else
         QStyledItemDelegate::paint(painter, option, index);
 }
