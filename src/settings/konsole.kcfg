@@ -89,4 +89,14 @@
       <default>true</default>
     </entry>
   </group>
+  <group name="FileLocation">
+    <entry name="scrollbackUseSystemLocation" type="Bool">
+      <label>For scrollback files, use system-wide folder location</label>
+      <default>true</default>
+    </entry>
+    <entry name="scrollbackUseCacheLocation" type="Bool">
+      <label>For scrollback files, use user's specific folder location</label>
+      <default>false</default>
+    </entry>
+  </group>
 </kcfg>

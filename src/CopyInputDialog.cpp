@@ -27,7 +27,6 @@
 #include "ui_CopyInputDialog.h"
 
 #include <KLocalizedString>
-#include <KConfigGroup>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -139,8 +138,9 @@ CheckableSessionModel::CheckableSessionModel(QObject* parent)
 }
 void CheckableSessionModel::setCheckColumn(int column)
 {
+    beginResetModel();
     _checkColumn = column;
-    reset();
+    endResetModel();
 }
 Qt::ItemFlags CheckableSessionModel::flags(const QModelIndex& index) const
 {
@@ -183,10 +183,11 @@ bool CheckableSessionModel::setData(const QModelIndex& index, const QVariant& va
         return SessionListModel::setData(index, value, role);
     }
 }
-void CheckableSessionModel::setCheckedSessions(const QSet<Session*> sessions)
+void CheckableSessionModel::setCheckedSessions(const QSet<Session*>& sessions)
 {
+    beginResetModel();
     _checkedSessions = sessions;
-    reset();
+    endResetModel();
 }
 QSet<Session*> CheckableSessionModel::checkedSessions() const
 {
@@ -194,12 +195,14 @@ QSet<Session*> CheckableSessionModel::checkedSessions() const
 }
 void CheckableSessionModel::setCheckable(Session* session, bool checkable)
 {
+    beginResetModel();
+
     if (!checkable)
         _fixedSessions.insert(session);
     else
         _fixedSessions.remove(session);
 
-    reset();
+    endResetModel();
 }
 void CheckableSessionModel::sessionRemoved(Session* session)
 {

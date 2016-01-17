@@ -85,7 +85,6 @@ set(konsoleprivate_SRCS ${sessionadaptors_SRCS}
                         KeyBindingEditor.cpp
                         KeyboardTranslator.cpp
                         KeyboardTranslatorManager.cpp
-                        ManageProfilesDialog.cpp
                         ProcessInfo.cpp
                         Profile.cpp
                         ProfileList.cpp
@@ -97,6 +96,7 @@ set(konsoleprivate_SRCS ${sessionadaptors_SRCS}
                         RenameTabWidget.cpp
                         Screen.cpp
                         ScreenWindow.cpp
+                        ScrollState.cpp
                         Session.cpp
                         SessionController.cpp
                         SessionManager.cpp
@@ -115,6 +115,7 @@ set(konsoleprivate_SRCS ${sessionadaptors_SRCS}
                         Vt102Emulation.cpp
                         ZModemDialog.cpp
                         PrintOptions.cpp
+                        konsoledebug.cpp
                         konsole_wcwidth.cpp
                         WindowSystemInfo.cpp
                         ${CMAKE_CURRENT_BINARY_DIR}/org.kde.konsole.Window.xml
@@ -146,13 +147,14 @@ ki18n_wrap_ui(konsoleprivate_SRCS ColorSchemeEditor.ui
                                 CopyInputDialog.ui
                                 EditProfileDialog.ui
                                 KeyBindingEditor.ui
-                                ManageProfilesDialog.ui
                                 RenameTabDialog.ui
                                 RenameTabWidget.ui
                                 HistorySizeDialog.ui
                                 HistorySizeWidget.ui
                                 PrintOptions.ui
+                                settings/FileLocationSettings.ui
                                 settings/GeneralSettings.ui
+                                settings/ProfileSettings.ui
                                 settings/TabBarSettings.ui)
 
 add_library(konsoleprivate ${konsoleprivate_SRCS})
@@ -170,8 +172,9 @@ set(konsole_KDEINIT_SRCS
    Application.cpp
    MainWindow.cpp
    main.cpp
-
+   settings/FileLocationSettings.cpp
    settings/GeneralSettings.cpp
+   settings/ProfileSettings.cpp
    settings/TabBarSettings.cpp)
 
 kconfig_add_kcfg_files(konsole_KDEINIT_SRCS settings/KonsoleSettings.kcfgc)

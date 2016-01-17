@@ -30,6 +30,7 @@
 #include <QtGui/QDragMoveEvent>
 #include <QtGui/QIcon>
 #include <QTabBar>
+#include <QApplication>
 
 // KDE
 #include <KLocalizedString>
@@ -50,10 +51,46 @@ ViewContainerTabBar::ViewContainerTabBar(QWidget* parent, TabbedViewContainer* c
     setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
     setElideMode(Qt::ElideLeft);
 
+    setAcceptDrops(true);
+    setMouseTracking(true);
+
+    _mousePressTimer = new QElapsedTimer();
+
     setWhatsThis(xi18nc("@info:whatsthis",
                        "<title>Tab Bar</title>"
                        "<para>The tab bar allows you to switch and move tabs. You can double-click a tab to change its name.</para>"));
 }
+
+ViewContainerTabBar::~ViewContainerTabBar()
+{
+    delete _mousePressTimer;
+}
+
+void ViewContainerTabBar::mousePressEvent(QMouseEvent* event)
+{
+    _mousePressTimer->start();
+
+    if (event->buttons() == Qt::LeftButton) {
+        _dragStart = event->pos();
+    }
+    QTabBar::mousePressEvent(event);
+}
+
+void ViewContainerTabBar::mouseMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons() == Qt::LeftButton) {
+        QPoint dragPos = _dragStart - event->pos();
+        if (dragPos.manhattanLength() > QApplication::startDragDistance()
+            && _mousePressTimer->elapsed() > QApplication::startDragTime()) {
+            int tab = tabAt(_dragStart);
+            if (tab != -1) {
+                emit initiateDrag(tab);
+            }
+        }
+    }
+    QTabBar::mouseMoveEvent(event);
+}
+
 
 void ViewContainerTabBar::dragEnterEvent(QDragEnterEvent* event)
 {

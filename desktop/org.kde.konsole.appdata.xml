@@ -7,9 +7,11 @@
   <name xml:lang="ast">Konsole</name>
   <name xml:lang="bs">Konzola</name>
   <name xml:lang="ca">Konsole</name>
+  <name xml:lang="ca-valencia">Konsole</name>
   <name xml:lang="cs">Konsole</name>
   <name xml:lang="da">Konsole</name>
   <name xml:lang="de">Konsole</name>
+  <name xml:lang="el">Konsole</name>
   <name xml:lang="en-GB">Konsole</name>
   <name xml:lang="es">Konsole</name>
   <name xml:lang="fi">Konsole</name>
@@ -18,8 +20,10 @@
   <name xml:lang="ia">Konsole</name>
   <name xml:lang="it">Konsole</name>
   <name xml:lang="ko">Konsole</name>
+  <name xml:lang="lt">Konsolė</name>
   <name xml:lang="nb">Konsole</name>
   <name xml:lang="nl">Konsole</name>
+  <name xml:lang="nn">Konsole</name>
   <name xml:lang="pa">ਕਨਸੋਲ</name>
   <name xml:lang="pl">Konsola</name>
   <name xml:lang="pt">Konsole</name>
@@ -41,8 +45,11 @@
   <summary xml:lang="ast">Terminal</summary>
   <summary xml:lang="bs">Terminal</summary>
   <summary xml:lang="ca">Terminal</summary>
+  <summary xml:lang="ca-valencia">Terminal</summary>
   <summary xml:lang="cs">Terminál</summary>
+  <summary xml:lang="da">Terminal</summary>
   <summary xml:lang="de">Terminal</summary>
+  <summary xml:lang="el">Τερματικό</summary>
   <summary xml:lang="en-GB">Terminal</summary>
   <summary xml:lang="es">Terminal</summary>
   <summary xml:lang="fi">Pääteikkuna</summary>
@@ -51,8 +58,10 @@
   <summary xml:lang="ia">Terminal</summary>
   <summary xml:lang="it">Terminale</summary>
   <summary xml:lang="ko">터미널</summary>
+  <summary xml:lang="lt">Terminalas</summary>
   <summary xml:lang="nb">Terminal</summary>
   <summary xml:lang="nl">Terminal</summary>
+  <summary xml:lang="nn">Terminal</summary>
   <summary xml:lang="pa">ਟਰਮੀਨਲ</summary>
   <summary xml:lang="pl">Terminal</summary>
   <summary xml:lang="pt">Terminal</summary>
@@ -74,8 +83,10 @@
     <p>Konsole is a terminal emulator.</p>
     <p xml:lang="ast">Konsole ye un emulador de terminal.</p>
     <p xml:lang="ca">El Konsole és l'emulador de terminal del KDE.</p>
+    <p xml:lang="ca-valencia">El Konsole és l'emulador de terminal del KDE.</p>
     <p xml:lang="cs">Konsole je emulátor terminálu.</p>
     <p xml:lang="de">Konsole ist in Terminal-Emulator</p>
+    <p xml:lang="el">Το Konsole είναι ένας εξομοιωτής τερματικού.</p>
     <p xml:lang="en-GB">Konsole is a terminal emulator.</p>
     <p xml:lang="es">Konsole es un emulador de terminal.</p>
     <p xml:lang="fi">Konsole on pääte-emulaattori.</p>
@@ -83,8 +94,10 @@
     <p xml:lang="hu">A Konsole egy terminálemulátor.</p>
     <p xml:lang="it">Konsole è un emulatore di terminale.</p>
     <p xml:lang="ko">Konsole은 터미널 에뮬레이터입니다.</p>
+    <p xml:lang="lt">Konsolė yra terminalo emuliatorius</p>
     <p xml:lang="nb">Konsole er en terminalemulator.</p>
     <p xml:lang="nl">Konsole is een terminalemulator</p>
+    <p xml:lang="nn">Konsole er ein terminalemulator.</p>
     <p xml:lang="pa">ਕਨਸੋਲ ਟਰਮੀਨਲ ਈਮੂਲੇਟਰ ਹੈ।</p>
     <p xml:lang="pl">Konsole jest emulatorem terminala.</p>
     <p xml:lang="pt">O Konsole é um emulador de terminal.</p>
@@ -106,8 +119,11 @@
     <p xml:lang="ast">Carauterístiques:</p>
     <p xml:lang="bs">Svojstva:</p>
     <p xml:lang="ca">Característiques:</p>
+    <p xml:lang="ca-valencia">Característiques:</p>
     <p xml:lang="cs">Vlastnosti:</p>
+    <p xml:lang="da">Funktioner:</p>
     <p xml:lang="de">Funktionen:</p>
+    <p xml:lang="el">Χαρακτηριστικά:</p>
     <p xml:lang="en-GB">Features:</p>
     <p xml:lang="es">Funcionalidades:</p>
     <p xml:lang="fi">Ominaisuuksia:</p>
@@ -116,8 +132,10 @@
     <p xml:lang="ia">Characteristicas:</p>
     <p xml:lang="it">Funzionalità:</p>
     <p xml:lang="ko">기능:</p>
+    <p xml:lang="lt">Ypatybės:</p>
     <p xml:lang="nb">Funksjoner:</p>
     <p xml:lang="nl">Mogelijkheden:</p>
+    <p xml:lang="nn">Funksjonar:</p>
     <p xml:lang="pa">ਫੀਚਰ:</p>
     <p xml:lang="pl">Możliwości:</p>
     <p xml:lang="pt">Funcionalidades:</p>
@@ -140,8 +158,11 @@
       <li xml:lang="ast">Llingüetes</li>
       <li xml:lang="bs">Kartice</li>
       <li xml:lang="ca">Pestanyes</li>
+      <li xml:lang="ca-valencia">Pestanyes</li>
       <li xml:lang="cs">Karty</li>
+      <li xml:lang="da">Faneblade</li>
       <li xml:lang="de">Unterfenster</li>
+      <li xml:lang="el">Καρτέλες</li>
       <li xml:lang="en-GB">Tabs</li>
       <li xml:lang="es">Pestañas</li>
       <li xml:lang="fi">Välilehdet</li>
@@ -150,8 +171,10 @@
       <li xml:lang="ia">Schedas</li>
       <li xml:lang="it">Schede</li>
       <li xml:lang="ko">탭</li>
+      <li xml:lang="lt">Kortelės</li>
       <li xml:lang="nb">Faner</li>
       <li xml:lang="nl">Tabbladen</li>
+      <li xml:lang="nn">Faner</li>
       <li xml:lang="pa">ਟੈਬ</li>
       <li xml:lang="pl">Karty</li>
       <li xml:lang="pt">Páginas</li>
@@ -172,8 +195,10 @@
       <li>Multiple profiles</li>
       <li xml:lang="ast">Perfiles múltiples</li>
       <li xml:lang="ca">Perfils múltiples</li>
+      <li xml:lang="ca-valencia">Perfils múltiples</li>
       <li xml:lang="cs">Možnost mít několik profilů</li>
       <li xml:lang="de">Mehrere Profile</li>
+      <li xml:lang="el">Πολλαπλά προφίλ</li>
       <li xml:lang="en-GB">Multiple profiles</li>
       <li xml:lang="es">Perfiles múltiples</li>
       <li xml:lang="fi">Useat profiilit</li>
@@ -181,8 +206,10 @@
       <li xml:lang="hu">Több profil használatának lehetősége</li>
       <li xml:lang="it">Profili multipli</li>
       <li xml:lang="ko">다중 프로필</li>
+      <li xml:lang="lt">Daugybė profilių</li>
       <li xml:lang="nb">Flere profiler</li>
       <li xml:lang="nl">Meerdere profielen</li>
+      <li xml:lang="nn">Fleire profilar</li>
       <li xml:lang="pa">ਵੱਖ-ਵੱਖ ਪ੍ਰੋਫਾਇਲ</li>
       <li xml:lang="pl">Wiele profili</li>
       <li xml:lang="pt">Múltiplos perfis</li>
@@ -201,9 +228,12 @@
       <li xml:lang="zh-CN">多配置文件</li>
       <li xml:lang="zh-TW">多重設定檔</li>
       <li>Silence and Activity monitoring</li>
+      <li xml:lang="ast">Silenciáu y monitoréu d'actividá</li>
       <li xml:lang="ca">Monitoratge del silenci i de l'activitat</li>
+      <li xml:lang="ca-valencia">Monitoratge del silenci i de l'activitat</li>
       <li xml:lang="cs">Monitorování nečinnosti a aktivity</li>
       <li xml:lang="de">Überwachung auf Aktivität und Inaktivität</li>
+      <li xml:lang="el">Παρακολούθηση κατάστασης αδράνειας και δραστηριοτήτων</li>
       <li xml:lang="en-GB">Silence and Activity monitoring</li>
       <li xml:lang="es">Supervisión de silencios y actividad</li>
       <li xml:lang="fi">Hiljaisuuden ja aktiivisuuden tarkkailu</li>
@@ -213,6 +243,7 @@
       <li xml:lang="ko">무음 및 활동 모니터링</li>
       <li xml:lang="nb">Overvåking av stillhet og aktivitet</li>
       <li xml:lang="nl">Monitoring van stilte en activiteit</li>
+      <li xml:lang="nn">Overvaking av aktivitet og inaktivitet</li>
       <li xml:lang="pa">ਸ਼ਾਂਤ ਅਤੇ ਸਰਗਰਮੀ ਨਿਗਰਾਨੀ</li>
       <li xml:lang="pl">Monitorowanie ciszy i aktywności</li>
       <li xml:lang="pt">Monitorização do silêncio e da actividade</li>
@@ -233,8 +264,10 @@
       <li>Bookmark support</li>
       <li xml:lang="ast">Sofitu de marcadores</li>
       <li xml:lang="ca">Implementació de punts</li>
+      <li xml:lang="ca-valencia">Implementació de punts</li>
       <li xml:lang="cs">Podpora záložek</li>
       <li xml:lang="de">Lesezeichen-Unterstützung</li>
+      <li xml:lang="el">υποστήριξη σελιδοδεικτών</li>
       <li xml:lang="en-GB">Bookmark support</li>
       <li xml:lang="es">Uso de marcadores</li>
       <li xml:lang="fi">Kirjanmerkkituki</li>
@@ -244,6 +277,7 @@
       <li xml:lang="ko">책갈피 지원</li>
       <li xml:lang="nb">Støtte for bokmerker</li>
       <li xml:lang="nl">Ondersteuning van bladwijzers</li>
+      <li xml:lang="nn">Bokmerkestøtte</li>
       <li xml:lang="pa">ਬੁੱਕਮਾਰਕ ਸਹਿਯੋਗ</li>
       <li xml:lang="pl">Obsługa zakładek</li>
       <li xml:lang="pt">Suporte para favoritos</li>
@@ -264,8 +298,11 @@
       <li>Searching</li>
       <li xml:lang="ast">Gueta</li>
       <li xml:lang="ca">Cerques</li>
+      <li xml:lang="ca-valencia">Cerques</li>
       <li xml:lang="cs">Hledání</li>
+      <li xml:lang="da">Søgning</li>
       <li xml:lang="de">Suchen</li>
+      <li xml:lang="el">Αναζήτηση</li>
       <li xml:lang="en-GB">Searching</li>
       <li xml:lang="es">Búsqueda</li>
       <li xml:lang="fi">Haku</li>
@@ -274,8 +311,10 @@
       <li xml:lang="ia">Cercante</li>
       <li xml:lang="it">Ricerca</li>
       <li xml:lang="ko">찾기</li>
+      <li xml:lang="lt">Paieška</li>
       <li xml:lang="nb">Søking</li>
       <li xml:lang="nl">Zoeken</li>
+      <li xml:lang="nn">Søkjestøtte</li>
       <li xml:lang="pa">ਖੋਜ ਕਰਨੀ</li>
       <li xml:lang="pl">Wyszukiwanie</li>
       <li xml:lang="pt">Procurar</li>
@@ -294,9 +333,13 @@
       <li xml:lang="zh-CN">搜索</li>
       <li xml:lang="zh-TW">搜尋</li>
       <li>Saving output</li>
+      <li xml:lang="ast">Guardáu de salida</li>
       <li xml:lang="ca">Desat de la sortida</li>
+      <li xml:lang="ca-valencia">Guardat de l'eixida</li>
       <li xml:lang="cs">Ukládání výstupu</li>
+      <li xml:lang="da">Gemning af output</li>
       <li xml:lang="de">Speicherung der Ausgabe</li>
+      <li xml:lang="el">Αποθήκευση αποτελέσματος</li>
       <li xml:lang="en-GB">Saving output</li>
       <li xml:lang="es">Guardar la salida</li>
       <li xml:lang="fi">Tulosteen tallennus</li>
@@ -304,8 +347,10 @@
       <li xml:lang="hu">Kimenet mentése</li>
       <li xml:lang="it">Salvataggio del risultato</li>
       <li xml:lang="ko">출력 저장</li>
+      <li xml:lang="lt">Išvesties įrašymas</li>
       <li xml:lang="nb">Lagrer utdata</li>
       <li xml:lang="nl">Opslaan van uitvoer</li>
+      <li xml:lang="nn">Lagring av utdata</li>
       <li xml:lang="pa">ਆਉਟਪੁੱਟ ਸੰਭਾਲਣੀ</li>
       <li xml:lang="pl">Zapisywanie wyniku</li>
       <li xml:lang="pt">Gravação do resultado</li>

@@ -135,6 +135,7 @@ Session::Session(QObject* parent) :
     connect(_emulation, &Konsole::Emulation::primaryScreenInUse, this, &Konsole::Session::onPrimaryScreenInUse);
     connect(_emulation, &Konsole::Emulation::selectionChanged, this, &Konsole::Session::selectionChanged);
     connect(_emulation, &Konsole::Emulation::imageResizeRequest, this, &Konsole::Session::resizeRequest);
+    connect(_emulation, &Konsole::Emulation::sessionAttributeRequest, this, &Konsole::Session::sessionAttributeRequest);
 
     //create new teletype for I/O with shell process
     openTeletype(-1);
@@ -232,7 +233,7 @@ void Session::setCodec(QTextCodec* codec)
     emulation()->setCodec(codec);
 }
 
-bool Session::setCodec(QByteArray name)
+bool Session::setCodec(const QByteArray& name)
 {
     QTextCodec* codec = QTextCodec::codecForName(name);
 
@@ -315,6 +316,9 @@ void Session::addView(TerminalDisplay* widget)
     connect(widget, &Konsole::TerminalDisplay::changedContentSizeSignal, this, &Konsole::Session::onViewSizeChange);
 
     connect(widget, &Konsole::TerminalDisplay::destroyed, this, &Konsole::Session::viewDestroyed);
+
+    connect(widget, &Konsole::TerminalDisplay::focusLost, _emulation, &Konsole::Emulation::focusLost);
+    connect(widget, &Konsole::TerminalDisplay::focusGained, _emulation, &Konsole::Emulation::focusGained);
 }
 
 void Session::viewDestroyed(QObject* view)
@@ -618,6 +622,16 @@ void Session::onPrimaryScreenInUse(bool use)
     emit primaryScreenInUse(use);
 }
 
+void Session::sessionAttributeRequest(int id)
+{
+    switch (id) {
+        case BackgroundColor:
+            // Get 'TerminalDisplay' (_view) background color
+            emit getBackgroundColor();
+            break;
+    }
+}
+
 void Session::activityStateSet(int state)
 {
     // TODO: should this hardcoded interval be user configurable?
@@ -719,6 +733,17 @@ void Session::sendSignal(int signal)
     if (ok) {
         ::kill(pid, signal);
     }
+}
+
+void Session::reportBackgroundColor(const QColor& c)
+{
+    #define to65k(a) (QString("%1").arg((int)(a*0xFFFF), 4, 16, QChar('0')))
+    QString msg = "\033]11;rgb:"
+                + to65k(c.redF())   + "/"
+                + to65k(c.greenF()) + "/"
+                + to65k(c.blueF())  + "\a";
+    _emulation->sendString(msg.toUtf8());
+    #undef to65k
 }
 
 bool Session::kill(int signal)

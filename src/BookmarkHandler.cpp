@@ -50,7 +50,7 @@ BookmarkHandler::BookmarkHandler(KActionCollection* collection,
       _toplevel(toplevel),
       _activeView(0)
 {
-    setObjectName(QLatin1String("BookmarkHandler"));
+    setObjectName(QStringLiteral("BookmarkHandler"));
 
     _file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("konsole/bookmarks.xml"));
 
@@ -60,7 +60,7 @@ BookmarkHandler::BookmarkHandler(KActionCollection* collection,
         _file += QStringLiteral("/bookmarks.xml");
     }
 
-    KBookmarkManager* manager = KBookmarkManager::managerForFile(_file, "konsole");
+    KBookmarkManager* manager = KBookmarkManager::managerForFile(_file, QStringLiteral("konsole"));
 
     manager->setUpdate(true);
 
@@ -150,6 +150,7 @@ bool BookmarkHandler::supportsTabs() const
 QList<KBookmarkOwner::FutureBookmark> BookmarkHandler::currentBookmarkList() const
 {
     QList<KBookmarkOwner::FutureBookmark> list;
+    list.reserve(_views.size());
 
     foreach(ViewProperties* view, _views) {
         list << KBookmarkOwner::FutureBookmark(titleForView(view) , urlForView(view), iconForView(view));

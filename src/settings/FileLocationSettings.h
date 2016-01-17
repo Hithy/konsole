@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 Jekyll Wu <adaptee@gmail.com>
+  Copyright 2015 Kurt Hindenburg <kurt.hindenburg@gmail.com>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -18,10 +18,24 @@
   along with this program. If not, see http://www.gnu.org/licenses/.
 */
 
-// Own
-#include "WindowSystemInfo.h"
+#ifndef FILELOCATIONSETTINGS_H
+#define FILELOCATIONSETTINGS_H
 
-using Konsole::WindowSystemInfo;
+#include "ui_FileLocationSettings.h"
 
-bool WindowSystemInfo::HAVE_TRANSPARENCY = false;
+namespace Konsole
+{
 
+class FileLocationSettings : public QWidget, private Ui::FileLocationSettings
+{
+    Q_OBJECT
+
+public:
+    explicit FileLocationSettings(QWidget* aParent = 0);
+    ~FileLocationSettings();
+
+};
+
+}
+
+#endif

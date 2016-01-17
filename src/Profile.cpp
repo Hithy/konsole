@@ -106,6 +106,7 @@ const Profile::PropertyInfo Profile::DefaultPropertyNames[] = {
     , { UnderlineLinksEnabled , "UnderlineLinksEnabled" , INTERACTION_GROUP , QVariant::Bool }
     , { OpenLinksByDirectClickEnabled , "OpenLinksByDirectClickEnabled" , INTERACTION_GROUP , QVariant::Bool }
     , { CtrlRequiredForDrag, "CtrlRequiredForDrag" , INTERACTION_GROUP , QVariant::Bool }
+    , { DropUrlsAsText , "DropUrlsAsText" , INTERACTION_GROUP , QVariant::Bool }
     , { AutoCopySelectedText , "AutoCopySelectedText" , INTERACTION_GROUP , QVariant::Bool }
     , { TrimTrailingSpacesInSelectedText , "TrimTrailingSpacesInSelectedText" , INTERACTION_GROUP , QVariant::Bool }
     , { PasteFromSelectionEnabled , "PasteFromSelectionEnabled" , INTERACTION_GROUP , QVariant::Bool }
@@ -150,7 +151,7 @@ FallbackProfile::FallbackProfile()
     setProperty(Command, qgetenv("SHELL"));
     setProperty(Arguments, QStringList() << qgetenv("SHELL"));
     setProperty(Icon, "utilities-terminal");
-    setProperty(Environment, QStringList() << "TERM=xterm");
+    setProperty(Environment, QStringList() << QStringLiteral("TERM=xterm"));
     setProperty(LocalTabTitleFormat, "%d : %n");
     setProperty(RemoteTabTitleFormat, "(%u) %H");
     setProperty(ShowTerminalSizeHint, true);
@@ -158,7 +159,7 @@ FallbackProfile::FallbackProfile()
     setProperty(MenuIndex, "0");
     setProperty(SilenceSeconds, 10);
     setProperty(TerminalColumns, 80);
-    setProperty(TerminalRows, 40);
+    setProperty(TerminalRows, 24);
     setProperty(MouseWheelZoomEnabled, true);
 
     setProperty(KeyBindings, "default");
@@ -177,6 +178,7 @@ FallbackProfile::FallbackProfile()
     setProperty(CtrlRequiredForDrag, true);
     setProperty(AutoCopySelectedText, false);
     setProperty(TrimTrailingSpacesInSelectedText, false);
+    setProperty(DropUrlsAsText, false);
     setProperty(PasteFromSelectionEnabled, true);
     setProperty(PasteFromClipboardEnabled, false);
     setProperty(MiddleClickPasteMode, Enum::PasteFromX11Selection);
@@ -194,7 +196,6 @@ FallbackProfile::FallbackProfile()
     setProperty(AntiAliasFonts, true);
     setProperty(BoldIntense, true);
 
-    // default taken from KDE 3
     setProperty(WordCharacters, ":@-./_~?&=%+#");
 
     // Fallback should not be shown in menus

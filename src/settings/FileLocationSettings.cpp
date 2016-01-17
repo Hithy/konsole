@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 Jekyll Wu <adaptee@gmail.com>
+  Copyright 2015 Kurt Hindenburg <kurt.hindenburg@gmail.com>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -19,9 +19,24 @@
 */
 
 // Own
-#include "WindowSystemInfo.h"
+#include "FileLocationSettings.h"
 
-using Konsole::WindowSystemInfo;
+#include <QDir>
+#include <QStandardPaths>
 
-bool WindowSystemInfo::HAVE_TRANSPARENCY = false;
+using namespace Konsole;
+
+FileLocationSettings::FileLocationSettings(QWidget* aParent) : QWidget(aParent)
+{
+    setupUi(this);
+
+    // TODO: worth adding gauge on free disk space?
+    useSystemLocationText->setText(QDir::tempPath());
+    useUsersHomeLocationText->setText(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+
+}
+
+FileLocationSettings::~FileLocationSettings()
+{
+}
 

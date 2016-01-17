@@ -335,8 +335,7 @@ void RegExpFilter::process()
 
     // ignore any regular expressions which match an empty string.
     // otherwise the while loop below will run indefinitely
-    static const QString emptyString("");
-    if (_searchText.exactMatch(emptyString))
+    if (_searchText.isEmpty())
         return;
 
     while (pos >= 0) {
@@ -386,7 +385,7 @@ UrlFilter::HotSpot::HotSpot(int startLine, int startColumn, int endLine, int end
 
 UrlFilter::HotSpot::UrlType UrlFilter::HotSpot::urlType() const
 {
-    const QString url = capturedTexts().first();
+    const QString url = capturedTexts().at(0);
 
     if (FullUrlRegExp.exactMatch(url))
         return StandardUrl;
@@ -398,26 +397,26 @@ UrlFilter::HotSpot::UrlType UrlFilter::HotSpot::urlType() const
 
 void UrlFilter::HotSpot::activate(QObject* object)
 {
-    QString url = capturedTexts().first();
+    QString url = capturedTexts().at(0);
 
     const UrlType kind = urlType();
 
     const QString& actionName = object ? object->objectName() : QString();
 
-    if (actionName == "copy-action") {
+    if (actionName == QLatin1String("copy-action")) {
         QApplication::clipboard()->setText(url);
         return;
     }
 
-    if (!object || actionName == "open-action") {
+    if (!object || actionName == QLatin1String("open-action")) {
         if (kind == StandardUrl) {
             // if the URL path does not include the protocol ( eg. "www.kde.org" ) then
             // prepend http:// ( eg. "www.kde.org" --> "http://www.kde.org" )
-            if (!url.contains("://")) {
-                url.prepend("http://");
+            if (!url.contains(QLatin1String("://"))) {
+                url.prepend(QLatin1String("http://"));
             }
         } else if (kind == Email) {
-            url.prepend("mailto:");
+            url.prepend(QLatin1String("mailto:"));
         }
 
         new KRun(QUrl(url), QApplication::activeWindow());
@@ -472,8 +471,8 @@ QList<QAction*> UrlFilter::HotSpot::actions()
     // object names are set here so that the hotspot performs the
     // correct action when activated() is called with the triggered
     // action passed as a parameter.
-    openAction->setObjectName(QLatin1String("open-action"));
-    copyAction->setObjectName(QLatin1String("copy-action"));
+    openAction->setObjectName(QStringLiteral("open-action"));
+    copyAction->setObjectName(QStringLiteral("copy-action"));
 
     QObject::connect(openAction , &QAction::triggered , _urlObject , &Konsole::FilterObject::activated);
     QObject::connect(copyAction , &QAction::triggered , _urlObject , &Konsole::FilterObject::activated);

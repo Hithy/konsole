@@ -41,7 +41,9 @@ static const char GENERAL_GROUP[]     = "General";
 QStringList KDE4ProfileReader::findProfiles()
 {
     QStringList profiles;
-    const QStringList dirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "konsole", QStandardPaths::LocateDirectory);
+    const QStringList dirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("konsole"), QStandardPaths::LocateDirectory);
+    profiles.reserve(dirs.size());
+
     Q_FOREACH (const QString& dir, dirs) {
         const QStringList fileNames = QDir(dir).entryList(QStringList() << QStringLiteral("*.profile"));
         Q_FOREACH (const QString& file, fileNames) {

@@ -25,7 +25,6 @@
 // Qt
 #include <QtCore/QSignalMapper>
 #include <QtCore/QStringList>
-#include <QMenu>
 #include <QAction>
 #include <QtDBus/QtDBus>
 
@@ -45,9 +44,7 @@
 #include "SessionController.h"
 #include "SessionManager.h"
 #include "ProfileManager.h"
-#include "ViewContainer.h"
 #include "ViewSplitter.h"
-#include "Profile.h"
 #include "Enumeration.h"
 
 using namespace Konsole;
@@ -96,8 +93,6 @@ ViewManager::ViewManager(QObject* parent , KActionCollection* collection)
 
     //prepare DBus communication
     new WindowAdaptor(this);
-    // TODO: remove this obsolete and bad name
-    QDBusConnection::sessionBus().registerObject(QLatin1String("/Konsole"), this);
 
     _managerId = ++lastManagerId;
     QDBusConnection::sessionBus().registerObject(QLatin1String("/Windows/") + QString::number(_managerId), this);
@@ -810,6 +805,7 @@ void ViewManager::applyProfileToView(TerminalDisplay* view , const Profile::Ptr 
     view->setAutoCopySelectedText(profile->autoCopySelectedText());
     view->setUnderlineLinks(profile->underlineLinksEnabled());
     view->setControlDrag(profile->property<bool>(Profile::CtrlRequiredForDrag));
+    view->setDropUrlsAsText(profile->property<bool>(Profile::DropUrlsAsText));
     view->setBidiEnabled(profile->bidiRenderingEnabled());
     view->setLineSpacing(profile->lineSpacing());
     view->setTrimTrailingSpaces(profile->property<bool>(Profile::TrimTrailingSpacesInSelectedText));
@@ -963,11 +959,6 @@ void ViewManager::restoreSessions(const KConfigGroup& group)
     }
 }
 
-uint qHash(QPointer<TerminalDisplay> display)
-{
-    return qHash((TerminalDisplay*)display);
-}
-
 int ViewManager::sessionCount()
 {
     return this->_sessionMap.size();
@@ -993,7 +984,7 @@ int ViewManager::newSession()
     return session->sessionId();
 }
 
-int ViewManager::newSession(QString profile, QString directory)
+int ViewManager::newSession(const QString& profile, const QString& directory)
 {
     const QList<Profile::Ptr> profilelist = ProfileManager::instance()->allProfiles();
     Profile::Ptr profileptr = ProfileManager::instance()->defaultProfile();

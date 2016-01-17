@@ -42,7 +42,6 @@
 #include <QScrollBar>
 #include <QStyle>
 #include <QtCore/QTimer>
-#include <QToolTip>
 #include <QDrag>
 #include <QtGui/QAccessible>
 
@@ -60,10 +59,10 @@
 
 // Konsole
 #include "Filter.h"
+#include "konsoledebug.h"
 #include "konsole_wcwidth.h"
 #include "TerminalCharacterDecoder.h"
 #include "Screen.h"
-#include "ScreenWindow.h"
 #include "LineFont.h"
 #include "SessionController.h"
 #include "ExtendedCharTable.h"
@@ -204,35 +203,55 @@ void TerminalDisplay::fontChange(const QFont&)
 
 void TerminalDisplay::setVTFont(const QFont& f)
 {
-    QFont font = f;
+    QFont newFont(f);
+    QFontMetrics fontMetrics(newFont);
 
-    QFontMetrics metrics(font);
+    // This check seems extreme and semi-random
+    if ((fontMetrics.height() > height()) || (fontMetrics.maxWidth() > width()))
+        return;
 
-    if (!QFontInfo(font).exactMatch()) {
-        qWarning() << "The font for use in the terminal has not been matched exactly. Perhaps it has not been found properly.";
+    // hint that text should be drawn without anti-aliasing.
+    // depending on the user's font configuration, this may not be respected
+    if (!_antialiasText)
+        newFont.setStyleStrategy(QFont::StyleStrategy(newFont.styleStrategy() | QFont::NoAntialias));
+
+    // experimental optimization.  Konsole assumes that the terminal is using a
+    // mono-spaced font, in which case kerning information should have an effect.
+    // Disabling kerning saves some computation when rendering text.
+    newFont.setKerning(false);
+
+    // Konsole cannot handle non-integer font metrics
+    newFont.setStyleStrategy(QFont::StyleStrategy(newFont.styleStrategy() | QFont::ForceIntegerMetrics));
+
+    QFontInfo fontInfo(newFont);
+
+    if (!fontInfo.fixedPitch()) {
+        qWarning() << "Ignoring font change due to it being variable-width";
+        return;
     }
 
-    if (!QFontInfo(font).fixedPitch()) {
-        qWarning() << "Using an unsupported variable-width font in the terminal.  This may produce display errors.";
+    // QFontInfo::fixedPitch() appears to not match QFont::fixedPitch()
+    // related?  https://bugreports.qt.io/browse/QTBUG-34082
+    if (!fontInfo.exactMatch()) {
+        const QChar comma(QLatin1Char(','));
+        QString nonMatching = fontInfo.family() % comma %
+            QString::number(fontInfo.pointSizeF()) % comma %
+            QString::number(fontInfo.pixelSize()) % comma %
+            QString::number((int)fontInfo.styleHint()) % comma %
+            QString::number(fontInfo.weight()) % comma %
+            QString::number((int)fontInfo.style()) % comma %
+            QString::number((int)fontInfo.underline()) % comma %
+            QString::number((int)fontInfo.strikeOut()) % comma %
+            QString::number((int)fontInfo.fixedPitch()) % comma %
+            QString::number((int)fontInfo.rawMode());
+
+        qCDebug(KonsoleDebug) << "The font to use in the terminal can not be matched exactly on your system.";
+        qCDebug(KonsoleDebug)<<" Selected: "<<newFont.toString();
+        qCDebug(KonsoleDebug)<<" System  : "<<nonMatching;
     }
 
-    if (metrics.height() < height() && metrics.maxWidth() < width()) {
-        // hint that text should be drawn without anti-aliasing.
-        // depending on the user's font configuration, this may not be respected
-        if (!_antialiasText)
-            font.setStyleStrategy(QFont::NoAntialias);
-
-        // experimental optimization.  Konsole assumes that the terminal is using a
-        // mono-spaced font, in which case kerning information should have an effect.
-        // Disabling kerning saves some computation when rendering text.
-        font.setKerning(false);
-
-        // Konsole cannot handle non-integer font metrics
-        font.setStyleStrategy(QFont::StyleStrategy(font.styleStrategy() | QFont::ForceIntegerMetrics));
-
-        QWidget::setFont(font);
-        fontChange(font);
-    }
+    QWidget::setFont(newFont);
+    fontChange(newFont);
 }
 
 void TerminalDisplay::setFont(const QFont &)
@@ -1648,6 +1667,8 @@ void TerminalDisplay::focusOutEvent(QFocusEvent*)
     // suppress further text blinking
     _blinkTextTimer->stop();
     Q_ASSERT(_textBlinking == false);
+
+    emit focusLost();
 }
 
 void TerminalDisplay::focusInEvent(QFocusEvent*)
@@ -1659,6 +1680,8 @@ void TerminalDisplay::focusInEvent(QFocusEvent*)
 
     if (_allowBlinkingText && _hasTextBlinker)
         _blinkTextTimer->start();
+
+    emit focusGained();
 }
 
 void TerminalDisplay::blinkTextEvent()
@@ -2419,14 +2442,17 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
         return;
 
     const int modifiers = ev->modifiers();
-    const int delta = ev->delta();
+
+    _scrollWheelState.addWheelEvent(ev);
 
     // ctrl+<wheel> for zooming, like in konqueror and firefox
     if ((modifiers & Qt::ControlModifier) && mouseWheelZoom()) {
-        if (delta > 0) {
+        int steps = _scrollWheelState.consumeLegacySteps(ScrollState::DEFAULT_ANGLE_SCROLL_LINE);
+        for (;steps > 0; --steps) {
             // wheel-up for increasing font size
             increaseFontSize();
-        } else {
+        }
+        for (;steps < 0; ++steps) {
             // wheel-down for decreasing font size
             decreaseFontSize();
         }
@@ -2443,6 +2469,7 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
         if (canScroll) {
             _scrollBar->event(ev);
             _sessionController->setSearchStartToWindowCurrentLine();
+            _scrollWheelState.clearAll();
         } else {
             // assume that each Up / Down key event will cause the terminal application
             // to scroll by one line.
@@ -2450,14 +2477,12 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
             // to get a reasonable scrolling speed, scroll by one line for every 5 degrees
             // of mouse wheel rotation.  Mouse wheels typically move in steps of 15 degrees,
             // giving a scroll of 3 lines
-            const int keyCode = delta > 0 ? Qt::Key_Up : Qt::Key_Down;
+
+            const int lines = _scrollWheelState.consumeSteps(_fontHeight * qApp->devicePixelRatio(), ScrollState::degreesToAngle(5));
+            const int keyCode = lines > 0 ? Qt::Key_Up : Qt::Key_Down;
             QKeyEvent keyEvent(QEvent::KeyPress, keyCode, Qt::NoModifier);
 
-            // QWheelEvent::delta() gives rotation in eighths of a degree
-            const int degrees = delta / 8;
-            const int lines = abs(degrees) / 5;
-
-            for (int i = 0; i < lines; i++)
+            for (int i = 0; i < abs(lines); i++)
                 emit keyPressedSignal(&keyEvent);
         }
     } else {
@@ -2466,11 +2491,14 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
         int charLine;
         int charColumn;
         getCharacterPosition(ev->pos() , charLine , charColumn);
-
-        emit mouseSignal(delta > 0 ? 4 : 5,
-                         charColumn + 1,
-                         charLine + 1 + _scrollBar->value() - _scrollBar->maximum() ,
-                         0);
+        const int steps = _scrollWheelState.consumeLegacySteps(ScrollState::DEFAULT_ANGLE_SCROLL_LINE);
+        const int button = (steps > 0) ? 4 : 5;
+        for (int i = 0; i < abs(steps); ++i) {
+            emit mouseSignal(button,
+                             charColumn + 1,
+                             charLine + 1 + _scrollBar->value() - _scrollBar->maximum() ,
+                             0);
+        }
     }
 }
 
@@ -3249,7 +3277,7 @@ void TerminalDisplay::dropEvent(QDropEvent* event)
 
         // If our target is local we will open a popup - otherwise the fallback kicks
         // in and the URLs will simply be pasted as text.
-        if (_sessionController && _sessionController->url().isLocalFile()) {
+        if (!_dropUrlsAsText && _sessionController && _sessionController->url().isLocalFile()) {
             // A standard popup with Copy, Move and Link as options -
             // plus an additional Paste option.
 

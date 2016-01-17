@@ -264,9 +264,7 @@ TabbedViewContainer::TabbedViewContainer(NavigationPosition position, ViewManage
     connect(_tabBar, &Konsole::ViewContainerTabBar::moveViewRequest, this, &Konsole::TabbedViewContainer::onMoveViewRequest);
     connect(_tabBar, &Konsole::ViewContainerTabBar::customContextMenuRequested, this, &Konsole::TabbedViewContainer::openTabContextMenu);
 
-    // The below need converted to work with Qt5 QTabBar
-    //connect(_tabBar, &Konsole::ViewContainerTabBar::wheelDelta, this, &Konsole::TabbedViewContainer::wheelScrolled);
-    //connect(_tabBar, &Konsole::ViewContainerTabBar::initiateDrag, this, &Konsole::TabbedViewContainer::startTabDrag);
+    connect(_tabBar, &Konsole::ViewContainerTabBar::initiateDrag, this, &Konsole::TabbedViewContainer::startTabDrag);
 
     // The context menu of tab bar
     _contextPopupMenu = new QMenu(_tabBar);
@@ -552,7 +550,7 @@ void TabbedViewContainer::openTabContextMenu(const QPoint& pos)
 #if defined(ENABLE_DETACHING)
     // Enable 'Detach Tab' menu item only if there is more than 1 tab
     // Note: the code is coupled with that action's position within the menu
-    QAction* detachAction = _contextPopupMenu->actions().first();
+    QAction* detachAction = _contextPopupMenu->actions().at(0);
     detachAction->setEnabled(_tabBar->count() > 1);
 #endif
 

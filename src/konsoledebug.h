@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 by Kurt Hindenburg <kurt.hindenburg@gmail.com>
+    Copyright 2015 by Kurt Hindenburg <kurt.hindenburg@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,29 +17,11 @@
     02110-1301  USA.
 */
 
-#ifndef HISTORYTEST_H
-#define HISTORYTEST_H
+#ifndef KONSOLE_DEBUG_H
+#define KONSOLE_DEBUG_H
 
-#include <kde_terminal_interface.h>
+#include <QLoggingCategory>
 
-namespace Konsole
-{
+Q_DECLARE_LOGGING_CATEGORY(KonsoleDebug)
 
-class HistoryTest : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void testHistoryNone();
-    void testHistoryFile();
-    void testCompactHistory();
-    void testEmulationHistory();
-    void testHistoryScroll();
-
-private:
-};
-
-}
-
-#endif // HISTORYTEST_H
-
+#endif // KONSOLE_DEBUG_H

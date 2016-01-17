@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 by Kurt Hindenburg <kurt.hindenburg@gmail.com>
+    Copyright 2015 by Kurt Hindenburg <kurt.hindenburg@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,27 +17,11 @@
     02110-1301  USA.
 */
 
-#ifndef TERMINALTEST_H
-#define TERMINALTEST_H
+#include "konsoledebug.h"
 
-#include <kde_terminal_interface.h>
-
-namespace Konsole
-{
-
-class TerminalTest : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void testScrollBarPositions();
-    void testColorTable();
-    void testSize();
-
-private:
-};
-
-}
-
-#endif // TERMINALTEST_H
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+// logging category for this framework, default: log stuff >= warning
+Q_LOGGING_CATEGORY(KonsoleDebug, "org.kde.konsole", QtWarningMsg)
+#else
+Q_LOGGING_CATEGORY(KonsoleDebug, "org.kde.konsole")
+#endif

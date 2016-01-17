@@ -32,6 +32,7 @@
 #include "ScreenWindow.h"
 #include "ColorScheme.h"
 #include "Enumeration.h"
+#include "ScrollState.h"
 
 class QDrag;
 class QDragEnterEvent;
@@ -160,6 +161,13 @@ public:
     }
     bool ctrlRequiredForDrag() const {
         return _ctrlRequiredForDrag;
+    }
+
+    void setDropUrlsAsText(bool enable) {
+        _dropUrlsAsText = enable;
+    }
+    bool getDropUrlsAsText() const {
+        return _dropUrlsAsText;
     }
 
     /** Sets how the text is selected when the user triple clicks within the display. */
@@ -612,6 +620,9 @@ signals:
 
     void sendStringToEmu(const QByteArray& local8BitString);
 
+    void focusLost();
+    void focusGained();
+
 protected:
     virtual bool event(QEvent* event);
 
@@ -850,6 +861,7 @@ private:
     bool _openLinksByDirectClick;     // Open URL and hosts by single mouse click
 
     bool _ctrlRequiredForDrag; // require Ctrl key for drag selected text
+    bool _dropUrlsAsText; // always paste URLs as text without showing copy/move menu
 
     Enum::TripleClickModeEnum _tripleClickMode;
     bool _possibleTripleClick;  // is set in mouseDoubleClickEvent and deleted
@@ -908,6 +920,8 @@ private:
     bool _centerContents;   // center the contents between margins
 
     qreal _opacity;
+
+    ScrollState _scrollWheelState;
 
     friend class TerminalDisplayAccessible;
 };

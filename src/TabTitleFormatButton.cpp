@@ -67,7 +67,7 @@ TabTitleFormatButton::~TabTitleFormatButton()
 
 void TabTitleFormatButton::fireElementSelected(QAction* action)
 {
-    emit dynamicElementSelected(action->data().value<QString>());
+    emit dynamicElementSelected(action->data().toString());
 }
 
 void TabTitleFormatButton::setContext(Session::TabTitleContext titleContext)
@@ -90,6 +90,8 @@ void TabTitleFormatButton::setContext(Session::TabTitleContext titleContext)
     }
 
     QList<QAction*> menuActions;
+    menuActions.reserve(count);
+
     for (int i = 0 ; i < count ; i++) {
         QAction* action = new QAction(i18n(array[i].description), this);
         action->setData(array[i].element);

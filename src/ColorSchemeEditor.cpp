@@ -33,9 +33,7 @@
 // KDE
 #include <QColorDialog>
 #include <KWindowSystem>
-#include <KUrlCompletion>
 #include <KLocalizedString>
-#include <KConfigGroup>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -60,7 +58,6 @@ ColorSchemeEditor::ColorSchemeEditor(QWidget* aParent)
     , _isNewScheme(false)
     , _colors(0)
 {
-    // Kdialog buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Apply);
     QWidget *mainWidget = new QWidget(this);
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -85,7 +82,7 @@ ColorSchemeEditor::ColorSchemeEditor(QWidget* aParent)
 
     // transparency slider
     QFontMetrics metrics(font());
-    _ui->transparencyPercentLabel->setMinimumWidth(metrics.width("100%"));
+    _ui->transparencyPercentLabel->setMinimumWidth(metrics.width(QStringLiteral("100%")));
 
     connect(_ui->transparencySlider , &QSlider::valueChanged , this , &Konsole::ColorSchemeEditor::setTransparencyPercentLabel);
 
@@ -117,11 +114,11 @@ ColorSchemeEditor::ColorSchemeEditor(QWidget* aParent)
     _ui->colorTable->setHorizontalHeaderLabels(labels);
 
     // Set resize mode for colorTable columns
-    _ui->colorTable->horizontalHeader()->setResizeMode(NAME_COLUMN, QHeaderView::ResizeToContents);
-    _ui->colorTable->horizontalHeader()->setResizeMode(COLOR_COLUMN, QHeaderView::Stretch);
-    _ui->colorTable->horizontalHeader()->setResizeMode(INTENSE_COLOR_COLUMN, QHeaderView::Stretch);
+    _ui->colorTable->horizontalHeader()->setSectionResizeMode(NAME_COLUMN, QHeaderView::ResizeToContents);
+    _ui->colorTable->horizontalHeader()->setSectionResizeMode(COLOR_COLUMN, QHeaderView::Stretch);
+    _ui->colorTable->horizontalHeader()->setSectionResizeMode(INTENSE_COLOR_COLUMN, QHeaderView::Stretch);
 
-    QTableWidgetItem* item = new QTableWidgetItem("Test");
+    QTableWidgetItem* item = new QTableWidgetItem(QStringLiteral("Test"));
     _ui->colorTable->setItem(0, 0, item);
 
     _ui->colorTable->verticalHeader()->hide();
@@ -176,11 +173,11 @@ void ColorSchemeEditor::selectWallpaper()
 {
     // Get supported image formats and convert to QString for getOpenFileName()
     const QList<QByteArray> mimeTypes = QImageReader::supportedImageFormats();
-    QString fileFormats = "(";
+    QString fileFormats = QStringLiteral("(");
     Q_FOREACH (const QByteArray &mime, mimeTypes) {
-        fileFormats += "*." + QString::fromLatin1(mime) + " ";
+        fileFormats += QStringLiteral("*.%1 ").arg(QLatin1String(mime));
     }
-    fileFormats += ")";
+    fileFormats += QLatin1String(")");
 
     const QString fileName = QFileDialog::getOpenFileName(this,
                              i18nc("@title:window", "Select wallpaper image file"),
@@ -211,7 +208,7 @@ void ColorSchemeEditor::setDescription(const QString& text)
 }
 void ColorSchemeEditor::setTransparencyPercentLabel(int percent)
 {
-    _ui->transparencyPercentLabel->setText(QString("%1%").arg(percent));
+    _ui->transparencyPercentLabel->setText(QStringLiteral("%1%").arg(percent));
 
     const qreal opacity = (100.0 - percent) / 100.0;
     _colors->setOpacity(opacity);

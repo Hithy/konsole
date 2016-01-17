@@ -261,6 +261,16 @@ public slots:
      */
     void receiveData(const char* buffer, int len);
 
+    /**
+     * Sends information about the focus lost event to the terminal.
+     */
+    virtual void focusLost() = 0;
+
+    /**
+     * Sends information about the focus gained event to the terminal.
+     */
+    virtual void focusGained() = 0;
+
 signals:
 
     /**
@@ -410,6 +420,11 @@ signals:
      * Emitted when the text selection is changed
      */
     void selectionChanged(const QString& text);
+
+    /**
+     * Emitted when terminal code requiring terminal's response received.
+     */
+    void sessionAttributeRequest(int id);
 
 protected:
     virtual void setMode(int mode) = 0;

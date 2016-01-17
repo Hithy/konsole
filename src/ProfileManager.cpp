@@ -84,18 +84,21 @@ ProfileManager::ProfileManager()
     // if the hosting application of konsolepart does not specify its own
     // default profile, use the default profile of stand-alone Konsole.
     if (defaultProfileFileName.isEmpty()) {
-        KSharedConfigPtr konsoleConfig = KSharedConfig::openConfig("konsolerc");
+        KSharedConfigPtr konsoleConfig = KSharedConfig::openConfig(QStringLiteral("konsolerc"));
         group = konsoleConfig->group("Desktop Entry");
-        defaultProfileFileName = group.readEntry("DefaultProfile", "Shell.profile");
+        defaultProfileFileName = group.readEntry("DefaultProfile", "");
     }
 
-    // load the default profile
-    const QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("konsole/") + defaultProfileFileName);
+    _defaultProfile = _fallbackProfile;
+    if (!defaultProfileFileName.isEmpty()) {
+        // load the default profile
+        const QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("konsole/") + defaultProfileFileName);
 
-    if (!path.isEmpty()) {
-        Profile::Ptr profile = loadProfile(path);
-        if (profile)
-            _defaultProfile = profile;
+        if (!path.isEmpty()) {
+            Profile::Ptr profile = loadProfile(path);
+            if (profile)
+                _defaultProfile = profile;
+        }
     }
 
     Q_ASSERT(_profiles.count() > 0);
@@ -131,10 +134,10 @@ Profile::Ptr ProfileManager::loadProfile(const QString& shortPath)
     if (fileInfo.isDir())
         return Profile::Ptr();
 
-    if (fileInfo.suffix() != "profile")
+    if (fileInfo.suffix() != QLatin1String("profile"))
         path.append(".profile");
-    if (fileInfo.path().isEmpty() || fileInfo.path() == ".")
-        path.prepend(QString("konsole") + QDir::separator());
+    if (fileInfo.path().isEmpty() || fileInfo.path() == QLatin1String("."))
+        path.prepend(QLatin1String("konsole") + QDir::separator());
 
     // if the file is not an absolute path, look it up
     if (!fileInfo.isAbsolute())
@@ -436,7 +439,7 @@ bool ProfileManager::deleteProfile(Profile::Ptr profile)
     // if we just deleted the default profile,
     // replace it with a random profile from the list
     if (wasDefault) {
-        setDefaultProfile(_profiles.toList().first());
+        setDefaultProfile(_profiles.toList().at(0));
     }
 
     emit profileRemoved(profile);
@@ -574,10 +577,6 @@ void ProfileManager::loadFavorites()
     if (favoriteGroup.hasKey("Favorites")) {
         QStringList list = favoriteGroup.readEntry("Favorites", QStringList());
         favoriteSet = QSet<QString>::fromList(list);
-    } else {
-        // if there is no favorites key at all, mark the
-        // supplied 'Shell.profile' as the only favorite
-        favoriteSet << "Shell.profile";
     }
 
     // look for favorites among those already loaded

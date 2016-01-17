@@ -20,7 +20,6 @@
 // Own
 #include "DBusTest.h"
 #include "../Session.h"
-#include <KDebug>
 #include <KProcess>
 
 using namespace Konsole;
@@ -28,17 +27,16 @@ using namespace Konsole;
 /* Exec a new Konsole and grab its dbus */
 void DBusTest::initTestCase()
 {
-    const QString interfaceName = "org.kde.konsole";
+    const QString interfaceName = QStringLiteral("org.kde.konsole");
     QDBusConnectionInterface* bus = 0;
     QStringList konsoleServices;
 
     if (!QDBusConnection::sessionBus().isConnected() ||
             !(bus = QDBusConnection::sessionBus().interface()))
-        kFatal() << "Session bus not found";
+        QFAIL("Session bus not found");
 
     QDBusReply<QStringList> serviceReply = bus->registeredServiceNames();
-    if (!serviceReply.isValid())
-        kFatal() << "SessionBus interfaces not available";
+    QVERIFY2(serviceReply.isValid(), "SessionBus interfaces not available");
 
     // Find all current Konsoles' services running
     QStringList allServices = serviceReply;
@@ -50,9 +48,9 @@ void DBusTest::initTestCase()
     }
 
     // Create a new Konsole with a separate process id
-    int result = KProcess::execute("konsole");
+    int result = KProcess::execute(QStringLiteral("konsole"));
     if (result)
-        kFatal() << "Unable to exec a new Konsole : " << result;
+        QFAIL(QString("Unable to exec a new Konsole: %1").arg(result).toLatin1().data());
 
     // Wait for above Konsole to finish starting
 #if defined(HAVE_USLEEP)
@@ -62,8 +60,7 @@ void DBusTest::initTestCase()
 #endif
 
     serviceReply = bus->registeredServiceNames();
-    if (!serviceReply.isValid())
-        kFatal() << "SessionBus interfaces not available";
+    QVERIFY2(serviceReply.isValid(), "SessionBus interfaces not available");
 
     // Find dbus service of above Konsole
     allServices = serviceReply;
@@ -75,14 +72,12 @@ void DBusTest::initTestCase()
                 _interfaceName = service;
     }
 
-    if (_interfaceName.isEmpty()) {
-        kFatal() << "This test will only work in a Konsole window with a new PID.  A new Konsole PID can't be found.";
-    }
-    //kDebug()<< "Using service: " + _interfaceName.toLatin1();
+    QVERIFY2(!_interfaceName.isEmpty(),
+             "This test will only work in a Konsole window with a new PID.  A new Konsole PID can't be found.");
 
     QDBusInterface iface(_interfaceName,
-                         QLatin1String("/Konsole"),
-                         QLatin1String("org.kde.konsole.Konsole"));
+                         QStringLiteral("/Windows/1"),
+                         QStringLiteral("org.kde.konsole.Konsole"));
     QVERIFY(iface.isValid());
 }
 
@@ -94,14 +89,13 @@ void DBusTest::cleanupTestCase()
     // they will get a popup dialog when we try to close this.
 
     QDBusInterface iface(_interfaceName,
-                         QLatin1String("/konsole/MainWindow_1"),
-                         QLatin1String("org.qtproject.Qt.QWidget"));
-    if (!iface.isValid())
-        kFatal() << "Unable to get a dbus interface to Konsole!";
+                         QStringLiteral("/konsole/MainWindow_1"),
+                         QStringLiteral("org.qtproject.Qt.QWidget"));
+    QVERIFY2(iface.isValid(), "Unable to get a dbus interface to Konsole!");
 
-    QDBusReply<void> instanceReply = iface.call("close");
+    QDBusReply<void> instanceReply = iface.call(QStringLiteral("close"));
     if (!instanceReply.isValid())
-        kFatal() << "Unable to close Konsole :" << instanceReply.error();
+        QFAIL(QString("Unable to close Konsole: %1").arg(instanceReply.error().message()).toLatin1().data());
 }
 
 void DBusTest::testSessions()
@@ -113,52 +107,52 @@ void DBusTest::testSessions()
     QDBusReply<QStringList> listReply;
 
     QDBusInterface iface(_interfaceName,
-                         QLatin1String("/Sessions/1"),
-                         QLatin1String("org.kde.konsole.Session"));
+                         QStringLiteral("/Sessions/1"),
+                         QStringLiteral("org.kde.konsole.Session"));
     QVERIFY(iface.isValid());
 
     //****************** Test is/set MonitorActivity
-    voidReply = iface.call("setMonitorActivity", false);
+    voidReply = iface.call(QStringLiteral("setMonitorActivity"), false);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("isMonitorActivity");
+    boolReply = iface.call(QStringLiteral("isMonitorActivity"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), false);
 
-    voidReply = iface.call("setMonitorActivity", true);
+    voidReply = iface.call(QStringLiteral("setMonitorActivity"), true);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("isMonitorActivity");
+    boolReply = iface.call(QStringLiteral("isMonitorActivity"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), true);
 
     //****************** Test is/set MonitorSilence
-    voidReply = iface.call("setMonitorSilence", false);
+    voidReply = iface.call(QStringLiteral("setMonitorSilence"), false);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("isMonitorSilence");
+    boolReply = iface.call(QStringLiteral("isMonitorSilence"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), false);
 
-    voidReply = iface.call("setMonitorSilence", true);
+    voidReply = iface.call(QStringLiteral("setMonitorSilence"), true);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("isMonitorSilence");
+    boolReply = iface.call(QStringLiteral("isMonitorSilence"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), true);
 
     //****************** Test codec and setCodec
-    arrayReply = iface.call("codec");
+    arrayReply = iface.call(QStringLiteral("codec"));
     QVERIFY(arrayReply.isValid());
 
     // Obtain a list of system's Codecs
     QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
     for (int i = 0; i < availableCodecs.count(); ++i) {
-        boolReply = iface.call("setCodec", availableCodecs[i]);
+        boolReply = iface.call(QStringLiteral("setCodec"), availableCodecs[i]);
         QVERIFY(boolReply.isValid());
         QCOMPARE(boolReply.value(), true);
 
-        arrayReply = iface.call("codec");
+        arrayReply = iface.call(QStringLiteral("codec"));
         QVERIFY(arrayReply.isValid());
         // Compare result with name due to aliases issue
         // Better way to do this?
@@ -167,53 +161,53 @@ void DBusTest::testSessions()
     }
 
     //****************** Test is/set flowControlEnabled
-    voidReply = iface.call("setFlowControlEnabled", true);
+    voidReply = iface.call(QStringLiteral("setFlowControlEnabled"), true);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("flowControlEnabled");
+    boolReply = iface.call(QStringLiteral("flowControlEnabled"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), true);
 
-    voidReply = iface.call("setFlowControlEnabled", false);
+    voidReply = iface.call(QStringLiteral("setFlowControlEnabled"), false);
     QVERIFY(voidReply.isValid());
 
-    boolReply = iface.call("flowControlEnabled");
+    boolReply = iface.call(QStringLiteral("flowControlEnabled"));
     QVERIFY(boolReply.isValid());
     QCOMPARE(boolReply.value(), false);
 
     //****************** Test is/set environment
-    listReply = iface.call("environment");
+    listReply = iface.call(QStringLiteral("environment"));
     QVERIFY(listReply.isValid());
 
     QStringList prevEnv = listReply.value();
     //for (int i = 0; i < prevEnv.size(); ++i)
-    //    kDebug()<< prevEnv.at(i).toLocal8Bit().constData() << endl;
+    //    qDebug()<< prevEnv.at(i).toLocal8Bit().constData() << endl;
 
-    voidReply = iface.call("setEnvironment", QStringList());
+    voidReply = iface.call(QStringLiteral("setEnvironment"), QStringList());
     QVERIFY(voidReply.isValid());
 
-    listReply = iface.call("environment");
+    listReply = iface.call(QStringLiteral("environment"));
     QVERIFY(listReply.isValid());
     QCOMPARE(listReply.value(), QStringList());
 
-    voidReply = iface.call("setEnvironment", prevEnv);
+    voidReply = iface.call(QStringLiteral("setEnvironment"), prevEnv);
     QVERIFY(voidReply.isValid());
 
-    listReply = iface.call("environment");
+    listReply = iface.call(QStringLiteral("environment"));
     QVERIFY(listReply.isValid());
     QCOMPARE(listReply.value(), prevEnv);
 
     //****************** Test is/set title
     // TODO: Consider checking what is in Profile
-    stringReply = iface.call("title", Session::LocalTabTitle);
+    stringReply = iface.call(QStringLiteral("title"), Session::LocalTabTitle);
     QVERIFY(stringReply.isValid());
 
-    //kDebug()<< stringReply.value();
+    //qDebug()<< stringReply.value();
     QString prevLocalTitle = stringReply.value();
 
     // set title to,  what title should be
     QMap<QString, QString> titleMap;
-    titleMap["Shell"] = "Shell";
+    titleMap[QStringLiteral("Shell")] = QLatin1String("Shell");
 
     // BUG: It appears that Session::LocalTabTitle is set to Shell and
     // doesn't change.  While RemoteTabTitle is actually the LocalTabTitle
@@ -221,10 +215,10 @@ void DBusTest::testSessions()
     QMapIterator<QString, QString> i(titleMap);
     while (i.hasNext()) {
         i.next();
-        voidReply = iface.call("setTitle", Session::LocalTabTitle, i.key());
+        voidReply = iface.call(QStringLiteral("setTitle"), Session::LocalTabTitle, i.key());
         QVERIFY(voidReply.isValid());
 
-        stringReply = iface.call("title", Session::LocalTabTitle);
+        stringReply = iface.call(QStringLiteral("title"), Session::LocalTabTitle);
         QVERIFY(stringReply.isValid());
 
         QCOMPARE(stringReply.value(), i.value());

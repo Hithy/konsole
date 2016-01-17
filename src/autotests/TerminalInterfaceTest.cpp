@@ -21,25 +21,33 @@
 #include "TerminalInterfaceTest.h"
 
 // Qt
+#include <QDir>
 #include <QSignalSpy>
+#include <QTimer>
 
 // KDE
 #include <KService>
-#include <KDebug>
 #include <qtest.h>
-//#include "../Part.h"
 
 using namespace Konsole;
 
-/* In KDE 4.x there are 2 versions: TerminalInterface and TerminalInterfaceV2
-   In KDE 5.x only one: TerminalInterface
-   The code below uses both as well the KonsolePart API
+/* TerminalInterface found in KParts/kde_terminal_interface.h
+ *
+ *  void startProgram(const QString &program,
+ *                    const QStringList &args)
+ *  void showShellInDir(const QString &dir)
+ *  void sendInput(const QString &text)
+ *  int terminalProcessId()
+ *  int foregroundProcessId()
+ *  QString foregroundProcessName()
+ *  QString currentWorkingDirectory() const
 */
-void TerminalInterfaceTest::testTerminalInterface()
+
+// Test with no shell running
+void TerminalInterfaceTest::testTerminalInterfaceNoShell()
 {
     QString currentDirectory;
     QString retVal;
-    bool result;
 
     // create a Konsole part and attempt to connect to it
     _terminalPart = createPart();
@@ -48,12 +56,41 @@ void TerminalInterfaceTest::testTerminalInterface()
 
     TerminalInterface* terminal = qobject_cast<TerminalInterface*>(_terminalPart);
     QVERIFY(terminal);
+
+    // Verify results when no shell running
+    int terminalProcessId  = terminal->terminalProcessId();
+    QCOMPARE(terminalProcessId, 0);
+    int foregroundProcessId  = terminal->foregroundProcessId();
+    QCOMPARE(foregroundProcessId, -1);
+    QString foregroundProcessName  = terminal->foregroundProcessName();
+    QCOMPARE(foregroundProcessName, QString());
+    const QString currentWorkingDirectory  = terminal->currentWorkingDirectory();
+    QCOMPARE(currentWorkingDirectory, QString());
+
+    delete _terminalPart;
+}
+
+// Test with default shell running
+void TerminalInterfaceTest::testTerminalInterface()
+{
+    QString currentDirectory;
+    QString retVal;
+
+    // create a Konsole part and attempt to connect to it
+    _terminalPart = createPart();
+    if (!_terminalPart)
+        QSKIP("konsolepart not found.", SkipSingle);
+
+    TerminalInterface* terminal = qobject_cast<TerminalInterface*>(_terminalPart);
+    QVERIFY(terminal);
+
+    // Start a shell in given directory
     terminal->showShellInDir(QDir::home().path());
 
     int foregroundProcessId  = terminal->foregroundProcessId();
     QCOMPARE(foregroundProcessId, -1);
     QString foregroundProcessName  = terminal->foregroundProcessName();
-    QCOMPARE(foregroundProcessName, QString(""));
+    QCOMPARE(foregroundProcessName, QString());
 
     // terminalProcessId() is the user's default shell
     // FIXME: find a way to verify this
@@ -77,7 +114,7 @@ void TerminalInterfaceTest::testTerminalInterface()
     // Let's trigger some signals
 
     // #1A - Test signal currentDirectoryChanged(QString)
-    currentDirectory = QString("/tmp");
+    currentDirectory = QStringLiteral("/tmp");
     terminal->sendInput("cd " + currentDirectory + '\n');
     sleep(2000);
     QCOMPARE(stateSpy.count(), 1);
@@ -88,31 +125,21 @@ void TerminalInterfaceTest::testTerminalInterface()
     QString firstSignalState = firstSignalArgs.at(0).toString();
     QCOMPARE(firstSignalState, currentDirectory);
 
-    // Test KonsolePart API currentWorkingDirectory()
-    result = QMetaObject::invokeMethod(_terminalPart,
-                                       "currentWorkingDirectory",
-                                       Qt::DirectConnection,
-                                       Q_RETURN_ARG(QString, retVal));
-    QVERIFY(result);
-    QCOMPARE(retVal, currentDirectory);
+    const QString currentWorkingDirectory  = terminal->currentWorkingDirectory();
+    QCOMPARE(currentWorkingDirectory, currentDirectory);
 
     // #1B - Test signal currentDirectoryChanged(QString)
     // Invalid directory - no signal should be emitted
-    terminal->sendInput("cd /usrADADFASDF\n");
+    terminal->sendInput(QStringLiteral("cd /usrADADFASDF\n"));
     sleep(2000);
     QCOMPARE(stateSpy.count(), 0);
 
     // Should be no change since the above cd didn't work
-    result = QMetaObject::invokeMethod(_terminalPart,
-                                       "currentWorkingDirectory",
-                                       Qt::DirectConnection,
-                                       Q_RETURN_ARG(QString, retVal));
-    QVERIFY(result);
-    QCOMPARE(retVal, currentDirectory);
-
+    const QString currentWorkingDirectory2  = terminal->currentWorkingDirectory();
+    QCOMPARE(currentWorkingDirectory2, currentDirectory);
 
     // Test starting a new program
-    QString command = "top";
+    QString command = QStringLiteral("top");
     terminal->sendInput(command + '\n');
     sleep(2000);
     // FIXME: find a good way to validate process id of 'top'
@@ -121,14 +148,14 @@ void TerminalInterfaceTest::testTerminalInterface()
     foregroundProcessName  = terminal->foregroundProcessName();
     QCOMPARE(foregroundProcessName, command);
 
-    terminal->sendInput("q");
+    terminal->sendInput(QStringLiteral("q"));
     sleep(2000);
 
     // Nothing running in foreground
     foregroundProcessId  = terminal->foregroundProcessId();
     QCOMPARE(foregroundProcessId, -1);
     foregroundProcessName  = terminal->foregroundProcessName();
-    QCOMPARE(foregroundProcessName, QString(""));
+    QCOMPARE(foregroundProcessName, QString());
 
     // Test destroyed()
     QSignalSpy destroyedSpy(_terminalPart, SIGNAL(destroyed()));
@@ -151,7 +178,7 @@ void TerminalInterfaceTest::sleep(int msecs)
 
 KParts::Part* TerminalInterfaceTest::createPart()
 {
-    KService::Ptr service = KService::serviceByDesktopName("konsolepart");
+    KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("konsolepart"));
     if (!service)       // not found
         return 0;
     KPluginFactory* factory = KPluginLoader(service->library()).factory();
@@ -163,6 +190,5 @@ KParts::Part* TerminalInterfaceTest::createPart()
     return terminalPart;
 }
 
-QTEST_MAIN(TerminalInterfaceTest )
-
+QTEST_MAIN(TerminalInterfaceTest)
 

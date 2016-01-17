@@ -72,9 +72,9 @@ extern "C" int Q_DECL_EXPORT kdemain(int argc, char** argv)
     app.setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
 
-    Kdelibs4ConfigMigrator migrate(QLatin1String("konsole"));
-    migrate.setConfigFiles(QStringList() << QStringLiteral("konsolerc") << QLatin1String("konsole.notifyrc"));
-    migrate.setUiFiles(QStringList() << QStringLiteral("sessionui.rc") << QLatin1String("partui.rc") << QLatin1String("konsoleui.rc"));
+    Kdelibs4ConfigMigrator migrate(QStringLiteral("konsole"));
+    migrate.setConfigFiles(QStringList() << QStringLiteral("konsolerc") << QStringLiteral("konsole.notifyrc"));
+    migrate.setUiFiles(QStringList() << QStringLiteral("sessionui.rc") << QStringLiteral("partui.rc") << QStringLiteral("konsoleui.rc"));
 
     if (migrate.migrate()) {
         Kdelibs4Migration dataMigrator;
@@ -98,6 +98,8 @@ extern "C" int Q_DECL_EXPORT kdemain(int argc, char** argv)
             }
         }
     }
+
+    KLocalizedString::setApplicationDomain("konsole");
 
     KAboutData about(QStringLiteral("konsole"),
                      i18nc("@title", "Konsole"),

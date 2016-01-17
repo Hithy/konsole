@@ -39,25 +39,20 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QDialog>
-#include <QDebug>
 // KDE
 #include <KCodecAction>
 
 #include <KIconDialog>
 #include <KUrlCompletion>
 #include <KWindowSystem>
-#include <KTextEdit>
 #include <KMessageBox>
 #include <KLocalizedString>
-#include <KConfigGroup>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
 // Konsole
-#include "ColorScheme.h"
 #include "ColorSchemeManager.h"
-#include "ColorSchemeEditor.h"
 #include "ui_EditProfileDialog.h"
 #include "KeyBindingEditor.h"
 #include "KeyboardTranslator.h"
@@ -65,7 +60,6 @@
 #include "ProfileManager.h"
 #include "ShellCommand.h"
 #include "WindowSystemInfo.h"
-#include "Enumeration.h"
 
 using namespace Konsole;
 
@@ -83,8 +77,8 @@ EditProfileDialog::EditProfileDialog(QWidget* aParent)
     QPushButton *okButton = mButtonBox->button(QDialogButtonBox::Ok);
     okButton->setDefault(true);
     okButton->setShortcut(Qt::CTRL | Qt::Key_Return);
-    connect(mButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(mButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(mButtonBox, &QDialogButtonBox::accepted, this, &Konsole::EditProfileDialog::accept);
+    connect(mButtonBox, &QDialogButtonBox::rejected, this, &Konsole::EditProfileDialog::reject);
 
     // disable the apply button , since no modification has been made
     mButtonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
@@ -167,7 +161,7 @@ QString EditProfileDialog::groupProfileNames(const ProfileGroup::Ptr group, int 
             caption += ',';
             // limit caption length to prevent very long window titles
             if (maxLength > 0 && caption.length() > maxLength) {
-                caption += "...";
+                caption += QLatin1String("...");
                 break;
             }
         }
@@ -337,7 +331,7 @@ void EditProfileDialog::showEnvironmentEditor()
     QString text = QInputDialog::getMultiLineText(this, 
             i18n("Edit Environment"),
             i18n("One environment variable per line"),
-            currentEnvironment.join("\n"),
+            currentEnvironment.join(QStringLiteral("\n")),
             &ok);
 
     if (ok && !text.isEmpty()) {
@@ -468,7 +462,7 @@ void EditProfileDialog::setupAppearancePage(const Profile::Ptr profile)
     _ui->fontPreviewLabel->setFont(profileFont);
     setFontInputValue(profileFont);
 
-    connect(_ui->fontSizeInput, SIGNAL(valueChanged(double)), this, SLOT(setFontSize(double)));
+    connect(_ui->fontSizeInput, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Konsole::EditProfileDialog::setFontSize);
     connect(_ui->selectFontButton, &QPushButton::clicked, this, &Konsole::EditProfileDialog::showFontDialog);
 
     // setup font smoothing
@@ -519,6 +513,7 @@ void EditProfileDialog::updateColorSchemeList(bool selectCurrentScheme)
     foreach(const ColorScheme* scheme, schemeList) {
         QStandardItem* item = new QStandardItem(scheme->description());
         item->setData(QVariant::fromValue(scheme) ,  Qt::UserRole + 1);
+        item->setData(QVariant::fromValue(_profile->font()),  Qt::UserRole + 2);
         item->setFlags(item->flags());
 
         if (currentScheme == scheme)
@@ -564,6 +559,7 @@ void EditProfileDialog::updateKeyBindingsList(bool selectCurrentTranslator)
         QStandardItem* item = new QStandardItem(translator->description());
         item->setEditable(false);
         item->setData(QVariant::fromValue(translator), Qt::UserRole + 1);
+        item->setData(QVariant::fromValue(_profile->font()), Qt::UserRole + 2);
         item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-keyboard")));
 
         if (translator == currentTranslator)
@@ -882,8 +878,8 @@ void EditProfileDialog::showKeyBindingEditor(bool isNewTranslator)
     QDialog dialog(this);
     QDialogButtonBox *buttonBox = new QDialogButtonBox(&dialog);
     buttonBox->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (isNewTranslator)
         dialog.setWindowTitle(i18n("New Key Binding List"));
@@ -1039,6 +1035,10 @@ void EditProfileDialog::setupMousePage(const Profile::Ptr profile)
             _ui->openLinksByDirectClickButton , Profile::OpenLinksByDirectClickEnabled,
             SLOT(toggleOpenLinksByDirectClick(bool))
         },
+        {
+            _ui->dropUrlsAsText , Profile::DropUrlsAsText,
+            SLOT(toggleDropUrlsAsText(bool))
+        },
         { 0 , Profile::Property(0) , 0 }
     };
     setupCheckBoxes(options , profile);
@@ -1169,6 +1169,10 @@ void EditProfileDialog::toggleCtrlRequiredForDrag(bool enable)
 {
     updateTempProfileProperty(Profile::CtrlRequiredForDrag, enable);
 }
+void EditProfileDialog::toggleDropUrlsAsText(bool enable)
+{
+    updateTempProfileProperty(Profile::DropUrlsAsText, enable);
+}
 void EditProfileDialog::toggleOpenLinksByDirectClick(bool enable)
 {
     updateTempProfileProperty(Profile::OpenLinksByDirectClickEnabled, enable);
@@ -1248,93 +1252,62 @@ void ColorSchemeViewDelegate::paint(QPainter* painter, const QStyleOptionViewIte
                                     const QModelIndex& index) const
 {
     const ColorScheme* scheme = index.data(Qt::UserRole + 1).value<const ColorScheme*>();
+    QFont profileFont = index.data(Qt::UserRole + 2).value<QFont>();
     Q_ASSERT(scheme);
     if (!scheme)
         return;
 
-    bool transparencyAvailable = KWindowSystem::compositingActive();
-
     painter->setRenderHint(QPainter::Antialiasing);
 
-    // draw background
-    painter->setPen(QPen(scheme->foregroundColor() , 1));
+    // Draw background
+    QStyle *style = option.widget ? option.widget->style() : QApplication::style();
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
 
-    // radial gradient for background
-    // from a lightened version of the scheme's background color in the center to
-    // a darker version at the outer edge
-    QColor color = scheme->backgroundColor();
-    QRectF backgroundRect = QRectF(option.rect).adjusted(1.5, 1.5, -1.5, -1.5);
+    // Draw name
+    QPalette::ColorRole textColor = (option.state & QStyle::State_Selected) ?
+        QPalette::HighlightedText: QPalette::Text;
+    painter->setPen(option.palette.color(textColor));
+    painter->setFont(option.font);
 
-    QRadialGradient backgroundGradient(backgroundRect.center() , backgroundRect.width() / 2);
-    backgroundGradient.setColorAt(0 , color.lighter(105));
-    backgroundGradient.setColorAt(1 , color.darker(115));
+    // Determine width of sample text using profile's font
+    const QString sampleText = i18n("AaZz09...");
+    QFontMetrics profileFontMetrics(profileFont);
+    const int sampleTextWidth = profileFontMetrics.width(sampleText);
 
-    const int backgroundRectXRoundness = 4;
-    const int backgroundRectYRoundness = 30;
+    painter->drawText(option.rect.adjusted(sampleTextWidth + 15,0,0,0),
+                      Qt::AlignLeft | Qt::AlignVCenter,
+                      index.data(Qt::DisplayRole).toString());
 
-    QPainterPath backgroundRectPath(backgroundRect.topLeft());
-    backgroundRectPath.addRoundRect(backgroundRect , backgroundRectXRoundness , backgroundRectYRoundness);
+    // Draw the preview
+    const int x = option.rect.left();
+    const int y = option.rect.top();
+
+    QRect previewRect(x + 4, y + 4, sampleTextWidth + 8, option.rect.height() - 8);
+
+    bool transparencyAvailable = KWindowSystem::compositingActive();
 
     if (transparencyAvailable) {
-        painter->save();
-        color.setAlphaF(scheme->opacity());
-        painter->setCompositionMode(QPainter::CompositionMode_Source);
-        painter->setBrush(backgroundGradient);
-
-        painter->drawPath(backgroundRectPath);
-        painter->restore();
+      painter->save();
+      QColor color = scheme->backgroundColor();
+      color.setAlphaF(scheme->opacity());
+      painter->setPen(Qt::NoPen);
+      painter->setCompositionMode(QPainter::CompositionMode_Source);
+      painter->setBrush(color);
+      painter->drawRect(previewRect);
+      painter->restore();
     } else {
-        painter->setBrush(backgroundGradient);
-        painter->drawPath(backgroundRectPath);
-    }
-
-    // draw stripe at the side using scheme's foreground color
-    painter->setPen(QPen(Qt::NoPen));
-    QPainterPath path(option.rect.topLeft());
-    path.lineTo(option.rect.width() / 10.0 , option.rect.top());
-    path.lineTo(option.rect.bottomLeft());
-    path.lineTo(option.rect.topLeft());
-    painter->setBrush(scheme->foregroundColor());
-    painter->drawPath(path.intersected(backgroundRectPath));
-
-    // draw highlight
-    // with a linear gradient going from translucent white to transparent
-    QLinearGradient gradient(option.rect.topLeft() , option.rect.bottomLeft());
-    gradient.setColorAt(0 , QColor(255, 255, 255, 90));
-    gradient.setColorAt(1 , Qt::transparent);
-    painter->setBrush(gradient);
-    painter->drawRoundRect(backgroundRect , 4 , 30);
-
-    const bool isSelected = option.state & QStyle::State_Selected;
-
-    // draw border on selected items
-    if (isSelected) {
-        static const int selectedBorderWidth = 6;
-
-        painter->setBrush(QBrush(Qt::NoBrush));
-        QPen pen;
-
-        QColor highlightColor = option.palette.highlight().color();
-        highlightColor.setAlphaF(1.0);
-
-        pen.setBrush(highlightColor);
-        pen.setWidth(selectedBorderWidth);
-        pen.setJoinStyle(Qt::MiterJoin);
-
-        painter->setPen(pen);
-
-        painter->drawRect(option.rect.adjusted(selectedBorderWidth / 2,
-                                               selectedBorderWidth / 2,
-                                               -selectedBorderWidth / 2,
-                                               -selectedBorderWidth / 2));
+      painter->setPen(Qt::NoPen);
+      painter->setBrush(scheme->backgroundColor());
+      painter->drawRect(previewRect);
     }
 
     // draw color scheme name using scheme's foreground color
     QPen pen(scheme->foregroundColor());
     painter->setPen(pen);
 
-    painter->drawText(option.rect , Qt::AlignCenter ,
-                      index.data(Qt::DisplayRole).value<QString>());
+    // TODO: respect antialias setting
+    painter->setFont(profileFont);
+    painter->drawText(previewRect , Qt::AlignCenter, sampleText);
 }
 
 QSize ColorSchemeViewDelegate::sizeHint(const QStyleOptionViewItem& option,

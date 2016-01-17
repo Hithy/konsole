@@ -22,7 +22,6 @@
 // KDE
 #include <KLocalizedString>
 #include <KTextEdit>
-#include <KConfigGroup>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <KGuiItem>
@@ -33,7 +32,7 @@ using Konsole::ZModemDialog;
 ZModemDialog::ZModemDialog(QWidget* aParent, bool modal, const QString& caption)
     : QDialog(aParent)
 {
-    setObjectName(QLatin1String("zmodem_progress"));
+    setObjectName(QStringLiteral("zmodem_progress"));
     setModal(modal);
     setWindowTitle(caption);
 

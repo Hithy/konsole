@@ -367,6 +367,8 @@ public:
 
     void sendSignal(int signal);
 
+    void reportBackgroundColor(const QColor& c);
+
 public slots:
 
     /**
@@ -502,7 +504,7 @@ public slots:
       * Overloaded to accept a QByteArray for convenience since DBus
       * does not accept QTextCodec directly.
       */
-    Q_SCRIPTABLE bool setCodec(QByteArray codec);
+    Q_SCRIPTABLE bool setCodec(const QByteArray& codec);
 
     /** Returns the codec used to decode incoming characters in this
      * terminal emulation
@@ -660,6 +662,15 @@ signals:
      */
     void selectionChanged(const QString& text);
 
+    /**
+     * Emitted when background request ('\033]11;?\a') terminal code received.
+     * Terminal is expected send '\033]11;rgb:RRRR/GGGG/BBBB\a' response.
+     *
+     * Originally implemented to support vim's background detection feature
+     * (without explictly setting 'bg=dark' within local/remote vimrc)
+     */
+    void getBackgroundColor();
+
 private slots:
     void done(int, QProcess::ExitStatus);
 
@@ -686,6 +697,8 @@ private slots:
 
     // signal relayer
     void onPrimaryScreenInUse(bool use);
+
+    void sessionAttributeRequest(int id);
 
 private:
     // checks that the binary 'program' is available and can be executed

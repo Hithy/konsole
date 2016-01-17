@@ -38,7 +38,6 @@
 
 // Konsole
 #include "KeyboardTranslator.h"
-#include "Screen.h"
 #include "TerminalDisplay.h"
 
 using Konsole::Vt102Emulation;
@@ -67,7 +66,8 @@ unsigned short Konsole::vt100_graphics[32] = {
 
 Vt102Emulation::Vt102Emulation()
     : Emulation(),
-      _titleUpdateTimer(new QTimer(this))
+      _titleUpdateTimer(new QTimer(this)),
+      _reportFocusEvents(false)
 {
     _titleUpdateTimer->setSingleShot(true);
     QObject::connect(_titleUpdateTimer , &QTimer::timeout , this , &Konsole::Vt102Emulation::updateTitle);
@@ -318,7 +318,7 @@ void Vt102Emulation::receiveChar(int cc)
     if (lec(1,0,ESC)) { return; }
     if (lec(1,0,ESC+128)) { s[0] = ESC; receiveChar('['); return; }
     if (les(2,1,GRP)) { return; }
-    if (Xte         ) { processWindowAttributeChange(); resetTokenizer(); return; }
+    if (Xte         ) { processWindowAttributeRequest(); resetTokenizer(); return; }
     if (Xpe         ) { return; }
     if (lec(3,2,'?')) { return; }
     if (lec(3,2,'>')) { return; }
@@ -390,17 +390,18 @@ void Vt102Emulation::receiveChar(int cc)
     return;
   }
 }
-void Vt102Emulation::processWindowAttributeChange()
+
+void Vt102Emulation::processWindowAttributeRequest()
 {
   // Describes the window or terminal session attribute to change
   // See Session::UserTitleChange for possible values
-  int attributeToChange = 0;
+  int attribute = 0;
   int i;
   for (i = 2; i < tokenBufferPos     &&
               tokenBuffer[i] >= '0'  &&
               tokenBuffer[i] <= '9'; i++)
   {
-    attributeToChange = 10 * attributeToChange + (tokenBuffer[i]-'0');
+    attribute = 10 * attribute + (tokenBuffer[i]-'0');
   }
 
   if (tokenBuffer[i] != ';')
@@ -409,12 +410,17 @@ void Vt102Emulation::processWindowAttributeChange()
     return;
   }
 
-  QString newValue;
-  newValue.reserve(tokenBufferPos-i-2);
+  QString value;
+  value.reserve(tokenBufferPos-i-2);
   for (int j = 0; j < tokenBufferPos-i-2; j++)
-    newValue[j] = tokenBuffer[i+1+j];
+    value[j] = tokenBuffer[i+1+j];
 
-  _pendingTitleUpdates[attributeToChange] = newValue;
+  if (value == "?") {
+      emit sessionAttributeRequest(attribute);
+      return;
+  }
+
+  _pendingTitleUpdates[attribute] = value;
   _titleUpdateTimer->start(20);
 }
 
@@ -758,6 +764,9 @@ void Vt102Emulation::processToken(int token, int p, int q)
     case TY_CSI_PR('s', 1003) :         saveMode      (MODE_Mouse1003); break; //XTERM
     case TY_CSI_PR('r', 1003) :      restoreMode      (MODE_Mouse1003); break; //XTERM
 
+    case TY_CSI_PR('h',  1004) : _reportFocusEvents = true; break;
+    case TY_CSI_PR('l',  1004) : _reportFocusEvents = false; break;
+
     case TY_CSI_PR('h', 1005) :          setMode      (MODE_Mouse1005); break; //XTERM
     case TY_CSI_PR('l', 1005) :        resetMode      (MODE_Mouse1005); break; //XTERM
     case TY_CSI_PR('s', 1005) :         saveMode      (MODE_Mouse1005); break; //XTERM
@@ -956,6 +965,32 @@ void Vt102Emulation::sendMouseEvent(int cb, int cx, int cy , int eventType)
     }
 
     sendString(command);
+}
+
+/**
+ * The focus lost event can be used by Vim (or other terminal applications)
+ * to recognize that the konsole window has lost focus.
+ * The escape sequence is also used by iTerm2.
+ * Vim needs the following plugin to be installed to convert the escape
+ * sequence into the FocusLost autocmd: https://github.com/sjl/vitality.vim
+ */
+void Vt102Emulation::focusLost(void)
+{
+    if (_reportFocusEvents)
+        sendString("\033[O");
+}
+
+/**
+ * The focus gained event can be used by Vim (or other terminal applications)
+ * to recognize that the konsole window has gained focus again.
+ * The escape sequence is also used by iTerm2.
+ * Vim needs the following plugin to be installed to convert the escape
+ * sequence into the FocusGained autocmd: https://github.com/sjl/vitality.vim
+ */
+void Vt102Emulation::focusGained(void)
+{
+    if (_reportFocusEvents)
+        sendString("\033[I");
 }
 
 void Vt102Emulation::sendText(const QString& text)
