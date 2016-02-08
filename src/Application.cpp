@@ -37,6 +37,7 @@
 #include "MainWindow.h"
 #include "Session.h"
 #include "ShellCommand.h"
+#include "KonsoleSettings.h"
 
 using namespace Konsole;
 
@@ -66,7 +67,7 @@ void Application::createWindow(Profile::Ptr profile, const QString& directory)
 {
     MainWindow* window = newMainWindow();
     window->createSession(profile, directory);
-    window->show();
+    finalizeNewMainWindow(window);
 }
 
 void Application::detachView(Session* session)
@@ -76,7 +77,7 @@ void Application::detachView(Session* session)
     // Since user is dragging and dropping, move dnd window to where
     // the user has the cursor (correct multiple monitor setups).
     window->move(QCursor::pos());
-    window->show();
+    finalizeNewMainWindow(window);
 }
 
 int Application::newInstance()
@@ -89,13 +90,17 @@ int Application::newInstance()
 
     // handle session management
 
+    // returns from processWindowArgs(args, createdNewMainWindow)
+    // if a new window was created
+    bool createdNewMainWindow = false;
+
     // check for arguments to print help or other information to the
     // terminal, quit if such an argument was found
     if (processHelpArgs())
         return 0;
 
     // create a new window or use an existing one
-    MainWindow* window = processWindowArgs();
+    MainWindow* window = processWindowArgs(createdNewMainWindow);
 
     if (m_parser.isSet("tabs-from-file")) {
         // create new session(s) as described in file
@@ -133,10 +138,14 @@ int Application::newInstance()
         // run. After that KMainWindow will have manually resized the
         // window to its saved size at this point (so the Qt::WA_Resized
         // attribute will be set)
-        if (!window->testAttribute(Qt::WA_Resized))
-            window->resize(window->sizeHint());
 
-        window->show();
+        // If not restoring size from last time or only adding new tab,
+        // resize window to chosen profile size (see Bug:345403)
+        if (createdNewMainWindow){
+            finalizeNewMainWindow(window);
+        } else{
+            window->show();
+        }
     }
 
     return 1;
@@ -270,7 +279,7 @@ void Application::createTabFromArgs(MainWindow* window,
 
 // Creates a new Konsole window.
 // If --new-tab is given, use existing window.
-MainWindow* Application::processWindowArgs()
+MainWindow* Application::processWindowArgs(bool &createdNewMainWindow)
 {
     qDebug() << "processWindowArgs()";
 
@@ -286,6 +295,7 @@ MainWindow* Application::processWindowArgs()
     }
 
     if (window == 0) {
+        createdNewMainWindow = true;
         window = newMainWindow();
 
         // override default menubar visibility
@@ -478,4 +488,11 @@ void Application::slotActivateRequested (const QStringList &args, const QString 
     qDebug() << "slotActivateRequested" << args << workingDir;
     m_parser.parse(args);
     newInstance();
+}
+
+void Application::finalizeNewMainWindow(MainWindow* window)
+{
+    if (!KonsoleSettings::saveGeometryOnExit())
+        window->resize(window->sizeHint());
+    window->show();
 }

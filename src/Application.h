@@ -78,11 +78,12 @@ private:
     void listProfilePropertyInfo();
     void startBackgroundMode(MainWindow* window);
     bool processHelpArgs();
-    MainWindow* processWindowArgs();
+    MainWindow* processWindowArgs(bool &createdNewMainWindow);
     Profile::Ptr processProfileSelectArgs();
     Profile::Ptr processProfileChangeArgs(Profile::Ptr baseProfile);
     void processTabsFromFileArgs(MainWindow* window);
     void createTabFromArgs(MainWindow* window, const QHash<QString, QString>&);
+    void finalizeNewMainWindow(MainWindow* window);
 
     MainWindow* _backgroundInstance;
     QCommandLineParser &m_parser;
