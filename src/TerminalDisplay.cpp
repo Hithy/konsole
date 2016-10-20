@@ -360,6 +360,7 @@ TerminalDisplay::TerminalDisplay(QWidget* parent)
     , _hasTextBlinker(false)
     , _urlHintsModifiers(Qt::NoModifier)
     , _showUrlHint(false)
+    , _underlineLinks(true)
     , _openLinksByDirectClick(false)
     , _ctrlRequiredForDrag(true)
     , _tripleClickMode(Enum::SelectWholeLine)
@@ -381,6 +382,7 @@ TerminalDisplay::TerminalDisplay(QWidget* parent)
     , _margin(1)
     , _centerContents(false)
     , _opacity(1.0)
+    , _highlight(0)
 {
     // terminal applications are not designed with Right-To-Left in mind,
     // so the layout is forced to Left-To-Right
@@ -1363,7 +1365,7 @@ void TerminalDisplay::paintFilters(QPainter& painter)
         urlNumber++;
 
         QRegion region;
-        if (spot->type() == Filter::HotSpot::Link) {
+        if (_underlineLinks && spot->type() == Filter::HotSpot::Link) {
             QRect r;
             if (spot->startLine() == spot->endLine()) {
                 r.setCoords(spot->startColumn()*_fontWidth + _contentRect.left(),
@@ -1441,7 +1443,7 @@ void TerminalDisplay::paintFilters(QPainter& painter)
                         endColumn * _fontWidth + _contentRect.left() - 1,
                         (line + 1)*_fontHeight + _contentRect.top() - 1);
             // Underline link hotspots
-            if (spot->type() == Filter::HotSpot::Link) {
+            if (_underlineLinks && spot->type() == Filter::HotSpot::Link) {
                 QFontMetrics metrics(font());
 
                 // find the baseline (which is the invisible line that the characters in the font sit on,
@@ -1942,6 +1944,9 @@ void TerminalDisplay::scrollBarPositionChanged(int)
     const bool atEndOfOutput = (_scrollBar->value() == _scrollBar->maximum());
     _screenWindow->setTrackOutput(atEndOfOutput);
 
+
+    _filterUpdateRequired = true;
+    this->processFilters();
     updateImage();
 }
 
@@ -2011,6 +2016,14 @@ void TerminalDisplay::mousePressEvent(QMouseEvent* ev)
         _lineSelectionMode = false;
         _wordSelectionMode = false;
 
+        if(_highlight != 0 )
+        {
+            this->_filterChain->removeFilter(_highlight);
+            delete _highlight;
+            _highlight = 0;
+            this->update();
+        }
+
         // The user clicked inside selected text
         bool selected =  _screenWindow->isSelected(pos.x(), pos.y());
 
@@ -2040,7 +2053,7 @@ void TerminalDisplay::mousePressEvent(QMouseEvent* ev)
                 emit mouseSignal(0, charColumn + 1, charLine + 1 + _scrollBar->value() - _scrollBar->maximum() , 0);
             }
 
-            if ((_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier))) {
+            if (_underlineLinks && (_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier))) {
                 Filter::HotSpot* spot = _filterChain->hotSpotAt(charLine, charColumn);
                 if (spot && spot->type() == Filter::HotSpot::Link) {
                     QObject action;
@@ -2080,41 +2093,43 @@ void TerminalDisplay::mouseMoveEvent(QMouseEvent* ev)
     // change link hot-spot appearance on mouse-over
     Filter::HotSpot* spot = _filterChain->hotSpotAt(charLine, charColumn);
     if (spot && spot->type() == Filter::HotSpot::Link) {
-        QRegion previousHotspotArea = _mouseOverHotspotArea;
-        _mouseOverHotspotArea = QRegion();
-        QRect r;
-        if (spot->startLine() == spot->endLine()) {
-            r.setCoords(spot->startColumn()*_fontWidth + _contentRect.left(),
-                        spot->startLine()*_fontHeight + _contentRect.top(),
-                        (spot->endColumn())*_fontWidth + _contentRect.left() - 1,
-                        (spot->endLine() + 1)*_fontHeight + _contentRect.top() - 1);
-            _mouseOverHotspotArea |= r;
-        } else {
-            r.setCoords(spot->startColumn()*_fontWidth + _contentRect.left(),
-                        spot->startLine()*_fontHeight + _contentRect.top(),
-                        (_columns)*_fontWidth + _contentRect.left() - 1,
-                        (spot->startLine() + 1)*_fontHeight + _contentRect.top() - 1);
-            _mouseOverHotspotArea |= r;
-            for (int line = spot->startLine() + 1 ; line < spot->endLine() ; line++) {
-                r.setCoords(0 * _fontWidth + _contentRect.left(),
-                            line * _fontHeight + _contentRect.top(),
+        if (_underlineLinks) {
+            QRegion previousHotspotArea = _mouseOverHotspotArea;
+            _mouseOverHotspotArea = QRegion();
+            QRect r;
+            if (spot->startLine() == spot->endLine()) {
+                r.setCoords(spot->startColumn()*_fontWidth + _contentRect.left(),
+                            spot->startLine()*_fontHeight + _contentRect.top(),
+                            (spot->endColumn())*_fontWidth + _contentRect.left() - 1,
+                            (spot->endLine() + 1)*_fontHeight + _contentRect.top() - 1);
+                _mouseOverHotspotArea |= r;
+            } else {
+                r.setCoords(spot->startColumn()*_fontWidth + _contentRect.left(),
+                            spot->startLine()*_fontHeight + _contentRect.top(),
                             (_columns)*_fontWidth + _contentRect.left() - 1,
-                            (line + 1)*_fontHeight + _contentRect.top() - 1);
+                            (spot->startLine() + 1)*_fontHeight + _contentRect.top() - 1);
+                _mouseOverHotspotArea |= r;
+                for (int line = spot->startLine() + 1 ; line < spot->endLine() ; line++) {
+                    r.setCoords(0 * _fontWidth + _contentRect.left(),
+                                line * _fontHeight + _contentRect.top(),
+                                (_columns)*_fontWidth + _contentRect.left() - 1,
+                                (line + 1)*_fontHeight + _contentRect.top() - 1);
+                    _mouseOverHotspotArea |= r;
+                }
+                r.setCoords(0 * _fontWidth + _contentRect.left(),
+                            spot->endLine()*_fontHeight + _contentRect.top(),
+                            (spot->endColumn())*_fontWidth + _contentRect.left() - 1,
+                            (spot->endLine() + 1)*_fontHeight + _contentRect.top() - 1);
                 _mouseOverHotspotArea |= r;
             }
-            r.setCoords(0 * _fontWidth + _contentRect.left(),
-                        spot->endLine()*_fontHeight + _contentRect.top(),
-                        (spot->endColumn())*_fontWidth + _contentRect.left() - 1,
-                        (spot->endLine() + 1)*_fontHeight + _contentRect.top() - 1);
-            _mouseOverHotspotArea |= r;
+
+            if ((_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier)) && (cursor().shape() != Qt::PointingHandCursor))
+                setCursor(Qt::PointingHandCursor);
+
+            update(_mouseOverHotspotArea | previousHotspotArea);
         }
-
-        if ((_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier)) && (cursor().shape() != Qt::PointingHandCursor))
-            setCursor(Qt::PointingHandCursor);
-
-        update(_mouseOverHotspotArea | previousHotspotArea);
     } else if (!_mouseOverHotspotArea.isEmpty()) {
-        if ((_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier)) || (cursor().shape() == Qt::PointingHandCursor))
+        if ((_underlineLinks && (_openLinksByDirectClick || (ev->modifiers() & Qt::ControlModifier))) || (cursor().shape() == Qt::PointingHandCursor))
             setCursor(_mouseMarks ? Qt::IBeamCursor : Qt::ArrowCursor);
 
         update(_mouseOverHotspotArea);
@@ -2343,13 +2358,33 @@ void TerminalDisplay::mouseReleaseEvent(QMouseEvent* ev)
     int charColumn;
     getCharacterPosition(ev->pos(), charLine, charColumn);
 
+
+
     if (ev->button() == Qt::LeftButton) {
         if (_dragInfo.state == diPending) {
             // We had a drag event pending but never confirmed.  Kill selection
             _screenWindow->clearSelection();
         } else {
             if (_actSel > 1) {
-                copyToX11Selection();
+                 copyToX11Selection();
+
+                 if(_highlight != 0 )
+                 {
+                     this->_filterChain->removeFilter(_highlight);
+                     delete _highlight;
+                     _highlight = 0;
+                 }
+
+                 _highlight = new RegExpFilter();
+                 QRegularExpression regExp;
+                 regExp.setPattern(_screenWindow->selectedText(_preserveLineBreaks,_trimTrailingSpaces));
+                 regExp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+                 _highlight->setRegExp(regExp);
+                 this->_filterChain->addFilter(_highlight);
+                 _filterUpdateRequired = true;
+                 this->processFilters();
+                 update();
+
             }
 
             _actSel = 0;
@@ -2357,6 +2392,8 @@ void TerminalDisplay::mouseReleaseEvent(QMouseEvent* ev)
             //FIXME: emits a release event even if the mouse is
             //       outside the range. The procedure used in `mouseMoveEvent'
             //       applies here, too.
+
+
 
             if (!_mouseMarks && !(ev->modifiers() & Qt::ShiftModifier))
                 emit mouseSignal(0,
@@ -2373,7 +2410,9 @@ void TerminalDisplay::mouseReleaseEvent(QMouseEvent* ev)
                          charColumn + 1,
                          charLine + 1 + _scrollBar->value() - _scrollBar->maximum() ,
                          2);
+
     }
+
 }
 
 void TerminalDisplay::getCharacterPosition(const QPoint& widgetPoint, int& line, int& column) const
@@ -2411,6 +2450,15 @@ void TerminalDisplay::processMidButtonClick(QMouseEvent* ev)
     if (_mouseMarks || (ev->modifiers() & Qt::ShiftModifier)) {
         const bool appendEnter = ev->modifiers() & Qt::ControlModifier;
 
+        if(_highlight != 0 )
+        {
+            this->_filterChain->removeFilter(_highlight);
+            delete _highlight;
+            _highlight = 0;
+            _filterUpdateRequired = true;
+            this->update();
+        }
+
         if (_middleClickPasteMode == Enum::PasteFromX11Selection) {
             pasteFromX11Selection(appendEnter);
         } else if (_middleClickPasteMode == Enum::PasteFromClipboard) {
@@ -2425,10 +2473,12 @@ void TerminalDisplay::processMidButtonClick(QMouseEvent* ev)
 
         emit mouseSignal(1, charColumn + 1, charLine + 1 + _scrollBar->value() - _scrollBar->maximum() , 0);
     }
+
 }
 
 void TerminalDisplay::mouseDoubleClickEvent(QMouseEvent* ev)
 {
+
     // Yes, successive middle click can trigger this event
     if (ev->button() == Qt::MidButton) {
         processMidButtonClick(ev);
@@ -2478,6 +2528,7 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
     // Only vertical scrolling is supported
     if (ev->orientation() != Qt::Vertical)
         return;
+
 
     const int modifiers = ev->modifiers();
 
@@ -2538,6 +2589,9 @@ void TerminalDisplay::wheelEvent(QWheelEvent* ev)
                              0);
         }
     }
+
+
+
 }
 
 void TerminalDisplay::tripleClickTimeout()

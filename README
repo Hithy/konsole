@@ -1,6 +1,18 @@
 Konsole - KDE's Terminal Emulator
 ==================================
 
+
+Forked from KDE/konsole and modified by hithy
+
+Add a feature:
+*	highlight all string which is selected.
+
+
+Old README:
+==================================
+
+
+
 Konsole is a terminal program for KDE.
 
 As well as being a standalone program, it is also used by other KDE programs
