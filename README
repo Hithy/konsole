@@ -4,8 +4,8 @@ Konsole - KDE's Terminal Emulator
 
 Forked from KDE/konsole and modified by hithy
 
-Add a feature:
-*	highlight all string which is selected.
+Add one feature:
+* highlight all strings when selected.
 
 
 Old README:
